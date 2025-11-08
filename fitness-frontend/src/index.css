@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@reference "tailwindcss";
+
+html, body {
+    @apply min-h-screen bg-gray-50 text-gray-900 font-sans;
+}
+
+button {
+    @apply rounded-lg px-4 py-2 font-medium transition-colors;
+}

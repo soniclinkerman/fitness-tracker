@@ -1,0 +1,1 @@
+export type ModalMode = 'CREATE_EXERCISE'| 'CREATE' | 'DELETE' | 'UPDATE' | 'CLOSED';
