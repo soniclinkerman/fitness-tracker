@@ -25,6 +25,8 @@ module Types
     field :workout_exercises, resolver: Resolvers::WorkoutExercises::FetchWorkoutExercises, null: true, description: "Fetches all workout exercises."
     field :programs, resolver: Resolvers::Programs::FetchPrograms, null: true, description: "Fetches a program."
     field :workout_days, resolver: Resolvers::WorkoutDays::FetchWorkoutDay, null: true, description: "Fetches a workout day."
+    field :workout_session, resolver: Resolvers::WorkoutSessions::FetchWorkoutSession, null: true, description: "Fetches a workout session."
+    field :current_workout_session, resolver: Resolvers::WorkoutSessions::CurrentWorkoutSession, null: true, description: "Fetches the active workout session."
     # TODO: remove me
     field :test_field, String, null: false,
       description: "An example field added by the generator"

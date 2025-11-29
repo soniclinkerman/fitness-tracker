@@ -20,9 +20,7 @@ query GetWorkoutDay($id: ID!) {
           targetRepsMax
           plannedReps
           plannedWeight
-          completedReps
           notes
-          withinTargetRange
         }
       }
   }

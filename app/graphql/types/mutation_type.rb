@@ -17,11 +17,16 @@ module Types
     field :create_workout_day, mutation: Mutations::WorkoutDays::CreateWorkoutDay
     field :add_exercise, mutation: Mutations::WorkoutDays::AddExercise
     field :save_workout_sets, mutation: Mutations::WorkoutSets::SaveWorkoutSets
-    field :complete_workout_day, mutation: Mutations::WorkoutDays::CompleteWorkoutDay
     field :add_workout_exercise, mutation: Mutations::WorkoutExercises::AddWorkoutExercise
     field :delete_workout_exercise, mutation: Mutations::WorkoutExercises::DeleteWorkoutExercise
     field :delete_program, mutation: Mutations::Programs::DeleteProgram
     field :update_program, mutation: Mutations::Programs::UpdateProgram
     field :update_workout_day, mutation: Mutations::WorkoutDays::UpdateWorkoutDay
+
+    field :start_workout_session, mutation: Mutations::WorkoutSessions::StartWorkoutSession
+    field :update_workout_set_sessions, mutation: Mutations::WorkoutSetSessions::UpdateWorkoutSetSessions
+    field :complete_workout_day, mutation: Mutations::WorkoutDays::CompleteWorkoutDay
+    field :complete_workout_session, mutation: Mutations::WorkoutSessions::CompleteWorkoutSession
+
   end
 end

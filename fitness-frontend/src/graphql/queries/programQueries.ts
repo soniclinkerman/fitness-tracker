@@ -38,9 +38,7 @@ export const GET_PROGRAM = gql`
           targetRepsMax
           plannedReps
           plannedWeight
-          completedReps
           notes
-          withinTargetRange
         }
       }
     }

@@ -17,9 +17,7 @@ mutation AddExerciseToWorkout($workoutDayId: ID!,$exerciseId:ID!, $workoutSetsAt
           targetRepsMax
           plannedReps
           plannedWeight
-          completedReps
           notes
-          withinTargetRange
         }
       }
     }
@@ -31,11 +29,9 @@ mutation UpdateWorkoutSets($workoutExerciseId: ID!,$exerciseId: ID, $workoutSets
   saveWorkoutSets(input: {workoutExerciseId: $workoutExerciseId, exerciseId: $exerciseId workoutSets: $workoutSets}){
    workoutSets{
     id
-    completedReps
     completedWeight
     plannedReps
     plannedWeight
-    completedReps
     targetRepsMin
     targetRepsMax
     completedWeight

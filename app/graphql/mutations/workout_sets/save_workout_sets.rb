@@ -1,7 +1,7 @@
 module Mutations
   module WorkoutSets
   class SaveWorkoutSets < BaseMutation
-    argument :workout_exercise_id, ID, required: true
+    argument :workout_exercise_id, ID, required: false
     argument :exercise_id, ID, required: false
     argument :workout_sets, [Types::Inputs::WorkoutSetInputType], required: true
 

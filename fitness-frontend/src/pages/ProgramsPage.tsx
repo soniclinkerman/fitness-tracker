@@ -108,11 +108,11 @@ const ProgramsPage = () => {
                             <div className="mb-5">
                                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Program Name</label>
                                 <input type="text"  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5"
-                                       placeholder="e.g., Incline Bench Press" required onChange={(e) => setName(e.target.value)}/>
+                                       placeholder="e.g., My Workout Plan" required onChange={(e) => setName(e.target.value)}/>
                             </div>
                             <div className="mb-5">
                                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Description (Optional)</label>
-                                <textarea className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about form, texhnique, or variations...'} onChange={(e) => setDescription(e.target.value)}>
+                                <textarea className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about what the focus of the program is on...'} onChange={(e) => setDescription(e.target.value)}>
 
                             </textarea>
                             </div>
@@ -162,12 +162,12 @@ const ProgramsPage = () => {
                         <div className="mb-5">
                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Program Name</label>
                             <input value={name} type="text"  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5"
-                                   placeholder="e.g., Incline Bench Press" required onChange={(e) => setName(e.target.value)}/>
+                                   placeholder="e.g., My Workout Plan" required onChange={(e) => setName(e.target.value)}/>
 
                         </div>
                         <div className="mb-5">
                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Description (Optional)</label>
-                            <textarea value={description} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about form, texhnique, or variations...'} onChange={(e) => setDescription(e.target.value)}>
+                            <textarea value={description} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about what the focus of the program is on'} onChange={(e) => setDescription(e.target.value)}>
 
                             </textarea>
                         </div>

@@ -10,9 +10,5 @@ module Types
     field :completed_weight, Float, null: true
     field :notes, String, null: true
     field :workout_exercise, Types::WorkoutExerciseType, null: true
-    field :within_target_range, Boolean, null: false
-    def within_target_range
-       object.completed_within_target?
-    end
   end
 end
