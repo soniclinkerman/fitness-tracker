@@ -28,5 +28,6 @@ module Types
     field :complete_workout_day, mutation: Mutations::WorkoutDays::CompleteWorkoutDay
     field :complete_workout_session, mutation: Mutations::WorkoutSessions::CompleteWorkoutSession
 
+    field :update_active_program, mutation: Mutations::Programs::UpdateActiveProgram
   end
 end

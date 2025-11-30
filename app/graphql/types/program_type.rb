@@ -6,10 +6,10 @@ module Types
     field :days_per_week, Integer, null: false
     field :workout_days, [Types::WorkoutDayType], null: true
 
-    field :move_to_next_day, Types::WorkoutDayType, null: true
+    field :next_workout_day, Types::WorkoutDayType, null: true
 
-    def move_to_next_day
-      object.next_day
+    def next_workout_day
+      object.next_workout_day
     end
   end
 end

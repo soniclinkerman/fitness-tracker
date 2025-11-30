@@ -7,7 +7,12 @@ import type {Program} from "../types/Program.ts";
 import type {ModalMode} from "../types/ModalMode.ts";
 import Modal from "../components/ui/Modal.tsx";
 import {CATEGORY} from "../types/ExerciseCategoryEnum.ts";
-import {CREATE_PROGRAM, DELETE_PROGRAM, UPDATE_PROGRAM} from "../graphql/mutations/programMutations.ts";
+import {
+    CREATE_PROGRAM,
+    DELETE_PROGRAM,
+    UPDATE_ACTIVE_PROGRAM,
+    UPDATE_PROGRAM
+} from "../graphql/mutations/programMutations.ts";
 import {useNavigate} from "react-router-dom";
 import BackButton from "../components/BackButton.tsx";
 import {GET_WORKOUT_DAY} from "../graphql/queries/workoutDayQueries.ts";
@@ -23,6 +28,18 @@ const ProgramsPage = () => {
             navigate(`/programs/${id}`);
         },
     })
+
+    const [updateActiveProgram] = useMutation(UPDATE_ACTIVE_PROGRAM, {
+        onCompleted: (data) => {
+            navigate("/")
+            console.log(data)
+        }
+    })
+
+    const setActiveProgram = async (id) => {
+       await updateActiveProgram({variables: {id:id}})
+
+    }
 
     const [updateProgram] = useMutation(UPDATE_PROGRAM, {
         refetchQueries: [
@@ -96,7 +113,7 @@ const ProgramsPage = () => {
 
             {data.programs.map(program => {
                 return(
-                    <ProgramCard onEdit={()=> editModal(program?.id)} onDelete={()=> onDelete(program?.id)} program={program}/>
+                    <ProgramCard onStart={()=> setActiveProgram(program?.id)} onEdit={()=> editModal(program?.id)} onDelete={()=> onDelete(program?.id)} program={program}/>
                 )
             })}
 

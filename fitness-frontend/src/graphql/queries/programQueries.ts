@@ -45,3 +45,31 @@ export const GET_PROGRAM = gql`
   }
 }
 `;
+
+export const GET_ACTIVE_PROGRAM = gql`
+ query{
+      activeProgram
+      {
+          id
+          name
+          description
+          daysPerWeek
+          nextWorkoutDay {
+            id
+            dayNumber
+            name
+            workoutExercises{
+              id
+            }
+          }
+          workoutDays{
+            id
+            dayNumber
+            name
+            workoutExercises{
+              id
+            }
+          }
+      }
+    }
+`

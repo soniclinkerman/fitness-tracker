@@ -3,9 +3,33 @@ class Program < ApplicationRecord
   has_many :workout_days, -> {order(:day_number)}, dependent: :destroy
   belongs_to :user, optional: true
 
-  def next_day
-    workout_days.order(:day_number).find_by(completed: false)
+  public
+  def next_workout_day
+    program = user.active_program
+    return nil if program.nil?
+
+    days = program.workout_days.order(:day_number)
+
+    last_session = user.workout_sessions
+                       .where(program_id: program.id)
+                       .where.not(completed_at: nil)
+                       .order(completed_at: :desc)
+                       .first
+
+    return days.first if last_session.nil?
+
+    completed_day = last_session.workout_day_session&.workout_day
+    return days.first if completed_day.nil?
+
+    i = days.index(completed_day)
+    return days.first if i.nil?
+
+    next_day = days[i + 1]
+    return days.first if next_day.nil?
+
+    next_day
   end
+
 
   def restartable?
     # When a user finishes all the workoutsessions in a given day and starts on day 1 again

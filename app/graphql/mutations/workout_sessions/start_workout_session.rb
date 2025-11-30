@@ -1,20 +1,24 @@
 module Mutations
   module WorkoutSessions
     class StartWorkoutSession < BaseMutation
-      argument :user_id, ID, required: true
-      argument :program_id, ID, required: false
-      argument :workout_day_id, ID, required: false
+      # argument :workout_day_id, ID, required: false
 
       field :workout_session, Types::WorkoutSessionType, null: false
 
-    def resolve(**args)
-      user_id = context[:current_user]&.id || args[:user_id]
-      workout_day_id = args[:workout_day_id]
-      program_id = args[:program_id]
-      workout_day = WorkoutDay.find_by(id: workout_day_id)
-      raise GraphQL::ExecutionError, "Workout day not found" unless workout_day
-      workout_exercises =workout_day.workout_exercises.includes(:workout_sets)
+    def resolve
+      user = context[:current_user]
+      user_id = user&.id
+      program_id = user.active_program_id
 
+      raise GraphQL::ExecutionError, "No active program" if program_id.nil?
+
+      active = WorkoutSession.where(user_id: , program_id: , completed_at: nil).first
+      raise GraphQL::ExecutionError, "Active workout session already exists" if active
+
+      workout_day = user.active_program.next_workout_day
+      raise GraphQL::ExecutionError, "Workout day not found" unless workout_day
+
+      workout_exercises = workout_day.workout_exercises.includes(:workout_sets)
       # raise GraphQL::ExecutionError, "Failed to start workout: #{e.record.errors.full_messages.join(', ')}"
       ActiveRecord::Base.transaction do
         workout_session = WorkoutSession.create!(user_id: , program_id:)

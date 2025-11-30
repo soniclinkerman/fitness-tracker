@@ -6,7 +6,7 @@ import type {CardActionProps} from "../types/CardActionProps.ts";
 interface ProgramCardProps extends CardActionProps<Program> {
     program: Program;
 }
-const ProgramCard = ({ program,onEdit,onDelete }: ProgramCardProps): JSX.Element => {
+const ProgramCard = ({ program,onEdit,onDelete, onStart }: ProgramCardProps): JSX.Element => {
     const { id, name, description, workoutDays } = program;
     const daysInProgram = workoutDays.length;
 
@@ -40,6 +40,12 @@ const ProgramCard = ({ program,onEdit,onDelete }: ProgramCardProps): JSX.Element
 
                 {/* Placeholder for future Edit/Delete buttons */}
                 <div className="flex gap-2 mt-3">
+                    <div>
+                        <button onClick={onStart} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-200">
+                            Start Program
+                        </button>
+                    </div>
+
                     <button onClick={onEdit} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-200">
                         Quick Edit
                     </button>

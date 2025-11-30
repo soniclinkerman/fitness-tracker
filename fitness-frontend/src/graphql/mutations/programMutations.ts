@@ -39,3 +39,22 @@ mutation UpdateProgram($id: ID!, $name: String, $description: String, $daysPerWe
     }
   }
 }`
+
+export const UPDATE_ACTIVE_PROGRAM = gql`
+    mutation UpdateActiveProgram($id: ID){
+      updateActiveProgram(input: {id: $id})
+      {
+        program{
+          id
+          name
+          description
+          daysPerWeek
+          workoutDays{
+            id
+            dayNumber
+            name
+          }
+        }
+      }
+    }
+    `

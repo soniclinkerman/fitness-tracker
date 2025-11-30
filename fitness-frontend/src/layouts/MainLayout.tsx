@@ -6,7 +6,8 @@ const MainLayout = (): JSX.Element => {
         <div className="min-h-screen flex flex-col">
             <header className="bg-gray-100 p-4 shadow">
                 <nav className="flex gap-6">
-                    <Link to="/">Exercises</Link>
+                    <Link to={"/"}>Home</Link>
+                    <Link to="/exercises">Exercises</Link>
                     <Link to="/programs">Programs</Link>
                 </nav>
             </header>
