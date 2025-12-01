@@ -19,10 +19,9 @@ module Mutations
       raise GraphQL::ExecutionError, "Workout day not found" unless workout_day
 
       workout_exercises = workout_day.workout_exercises.includes(:workout_sets)
-      # raise GraphQL::ExecutionError, "Failed to start workout: #{e.record.errors.full_messages.join(', ')}"
       ActiveRecord::Base.transaction do
         workout_session = WorkoutSession.create!(user_id: , program_id:)
-        workout_day_session = WorkoutDaySession.create!(workout_session: workout_session, workout_day_id: )
+        workout_day_session = WorkoutDaySession.create!(workout_session: workout_session, workout_day_id: workout_day.id )
         workout_exercises.each do |workout_exercise|
           workout_exercise.workout_sets.each do |workout_set|
             workout_set_session = WorkoutSetSession.create!(

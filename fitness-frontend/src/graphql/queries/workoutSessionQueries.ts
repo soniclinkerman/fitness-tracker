@@ -1,23 +1,16 @@
 import {gql} from "@apollo/client";
 
-export const START_WORKOUT_SESSION = gql`
-    mutation {
-      startWorkoutSession(
-        input: {
-          userId: 14
-          programId: "1"
-          workoutDayId: "1"
-        }
-      ) {
-        workoutSession {
-          id
-          startedAt
-          workoutDaySession {
-            id
-            workoutSetSessions {
+export const GET_WORKOUT_SESSION = gql`
+    query WorkoutSession($id: ID!){
+      workoutSession(id:$id){
+        id
+        workoutDaySession{
+          workoutDayId
+          groupedWorkoutExercises
+          {
+            exerciseName
+            sets {
               id
-              exerciseId
-              plannedWeight
               targetRepsMin
               targetRepsMax
             }
@@ -25,5 +18,4 @@ export const START_WORKOUT_SESSION = gql`
         }
       }
     }
-
     `

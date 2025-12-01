@@ -1,4 +1,4 @@
-export default function WeekDayList({ workoutDays: days, nextWorkoutDay, title }) {
+export default function WeekDayList({ workoutDays: days, nextWorkoutDay, title, workoutSession }) {
     return (
         <div className="mt-8">
             <h2 className="text-lg font-semibold mb-3">{title}</h2>
@@ -7,9 +7,9 @@ export default function WeekDayList({ workoutDays: days, nextWorkoutDay, title }
                 {days.map((day) => {
                     // Compute states
                     const isCompleted = nextWorkoutDay && day.dayNumber < nextWorkoutDay.dayNumber;
-                    const isCurrent = nextWorkoutDay && day.dayNumber === nextWorkoutDay.dayNumber;
+                    const isCurrent = nextWorkoutDay && day.dayNumber === nextWorkoutDay.dayNumber && !workoutSession
                     const isFuture = nextWorkoutDay && day.dayNumber > nextWorkoutDay.dayNumber;
-
+                    const isInProgress = workoutSession && day.id === workoutSession.workoutDaySession.workoutDayId
                     return (
                         <button
                             key={day.id}
@@ -65,9 +65,15 @@ export default function WeekDayList({ workoutDays: days, nextWorkoutDay, title }
 
                                         {isCurrent && (
                                             <span className="text-blue-600 font-medium">
-                                                • Next Up
+                                                • Up Next
                                             </span>
                                         )}
+                                        {isInProgress &&(
+                                            <span className="text-yellow-600 font-medium">
+                                                • In Progress
+                                            </span>
+                                        )}
+
                                     </p>
                                 </div>
                             </div>

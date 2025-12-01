@@ -1,4 +1,4 @@
-export default function NextWorkoutCard({ day, onStart }) {
+export default function NextWorkoutCard({ day, onStart, active }) {
     if (!day) return null;
 
     return (
@@ -48,7 +48,7 @@ export default function NextWorkoutCard({ day, onStart }) {
                     "
                 >
                     <span className="text-xl">▶️</span>
-                    Start Workout
+                    {active ? "Resume" : "Start"} Workout
                 </button>
 
             </div>
