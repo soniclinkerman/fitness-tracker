@@ -6,8 +6,6 @@ module Types
     field :target_reps_max, Integer, null: true
     field :planned_reps, Integer, null: true
     field :planned_weight, Float, null: true
-    field :completed_reps, Integer, null: true
-    field :completed_weight, Float, null: true
     field :notes, String, null: true
     field :workout_exercise, Types::WorkoutExerciseType, null: true
   end

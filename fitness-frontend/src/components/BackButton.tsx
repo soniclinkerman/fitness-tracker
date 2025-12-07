@@ -1,11 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline"; // Assuming you use Heroicons
 
-const BackButton = () => {
+const BackButton = ({directory=-1}) => {
     const navigate = useNavigate();
-
     const handleBack = () => {
-        navigate(-1);  // This will navigate to the previous page
+        navigate(directory);  // This will navigate to the previous page
     };
 
     return (

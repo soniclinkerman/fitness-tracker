@@ -19,3 +19,26 @@ export const START_WORKOUT_SESSION = gql`
         }
       }
     }`
+
+export const COMPLETE_WORKOUT_SESSION = gql`
+    mutation CompleteWorkoutSession{
+  completeWorkoutSession(input: {}){
+    sessionCompleted
+    workoutSession{
+      workoutDaySession{
+        groupedWorkoutExercises{
+          exerciseName
+          sets {
+          id
+          exerciseId
+          targetRepsMin
+          targetRepsMax
+          completedReps
+          completedWeight
+        }
+      }
+    }
+  }
+  }
+ }
+`

@@ -27,7 +27,10 @@ module Mutations
           args[:sets].each do |set|
             record = records_by_id[set.id.to_i]
             next if record.nil?
-            allowed_attrs = set.to_h.slice(*ALLOWED_ATTRIBUTES)
+            attrs = set.to_h.transform_keys { |key|
+              key.to_s.underscore.to_sym
+            }
+            allowed_attrs = attrs.slice(*ALLOWED_ATTRIBUTES)
             record.update!(allowed_attrs)
           end
           { workout_set_sessions: workout_set_sessions.reload }

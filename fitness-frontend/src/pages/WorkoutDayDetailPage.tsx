@@ -115,7 +115,7 @@ const WorkoutDayDetailPage = () => {
         }
     })
 
-    console.log(selectedExerciseId)
+
 
     const filteredExercises = exerciseData?.exercises?.filter((ex) =>
         ex.name.toLowerCase().includes(searchTerm.toLowerCase())

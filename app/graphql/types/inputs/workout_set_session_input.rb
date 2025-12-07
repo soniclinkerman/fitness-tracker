@@ -7,6 +7,8 @@ module Types
       argument :notes, String, required: false
       argument :rpe, Float, required: false
       argument :is_failure, Boolean, required: false
+      argument :target_reps_min, Int, required: false
+      argument :target_reps_max, Int, required: false
     end
   end
 end

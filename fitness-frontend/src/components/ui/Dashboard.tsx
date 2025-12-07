@@ -6,20 +6,18 @@ import {useNavigate} from "react-router-dom";
 import NextWorkoutCard from "./NextWorkoutCard.tsx";
 import {useMutation, useQuery} from "@apollo/client/react";
 import {START_WORKOUT_SESSION} from "../../graphql/mutations/workoutSessionMutations.ts";
-import {GET_WORKOUT_SESSION} from "../../graphql/queries/workoutSessionQueries.ts";
+import {GET_ACTIVE_WORKOUT_SESSION, GET_WORKOUT_SESSION} from "../../graphql/queries/workoutSessionQueries.ts";
 import {useEffect, useState} from "react";
 
 
 export default function Dashboard({ activeProgram, totalWorkouts, currentWeek }) {
     const navigate = useNavigate()
     const [workoutSession, setWorkoutSession] = useState()
-    const { data, loading } = useQuery(GET_WORKOUT_SESSION, {
-        variables: { id: 13 }
-    });
+    const { data, loading } = useQuery(GET_ACTIVE_WORKOUT_SESSION);
 
     useEffect(() => {
-        if (data?.workoutSession) {
-            setWorkoutSession(data.workoutSession);
+        if (data?.activeWorkoutSession) {
+            setWorkoutSession(data.activeWorkoutSession);
         }
     }, [data]);
 

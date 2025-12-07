@@ -7,6 +7,7 @@ import ProgramDetailPage from "../pages/ProgramDetailPage.tsx";
 import WorkoutDayDetailPage from "../pages/WorkoutDayDetailPage.tsx";
 import DashboardPage from "../pages/DashboardPage.tsx";
 import WorkoutSessionPage from "../pages/WorkoutSessionPage.tsx";
+import ExerciseLoggingPage from "../pages/ExerciseLoggingPage.tsx";
 
 
 const AppRoutes = (): JSX.Element => {
@@ -19,7 +20,7 @@ const AppRoutes = (): JSX.Element => {
                 <Route path={"programs/:id"} element={<ProgramDetailPage/>}/>
                 <Route path={"programs/:programId/days/:dayId"} element={<WorkoutDayDetailPage/>}/>
                 <Route path={"workout-sessions/:id"} element={<WorkoutSessionPage/>}/>
-
+                <Route path={"workout-sessions/:sessionId/exercise/:workoutExerciseId"} element={<ExerciseLoggingPage/>}/>
             </Route>
         </Routes>
     )

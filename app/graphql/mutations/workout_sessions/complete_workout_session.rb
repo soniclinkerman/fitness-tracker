@@ -8,7 +8,7 @@ module Mutations
         user = context[:current_user]
         return nil if user.nil?
         active_session = user.workout_sessions.where(:completed_at => nil).order(created_at: :desc).first
-        CompleteSession.call(session: active_session)
+        CompleteSession.call(active_session)
       end
     end
   end
