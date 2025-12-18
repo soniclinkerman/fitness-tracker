@@ -29,6 +29,8 @@ export default function WorkoutSessionPage() {
         await completeWorkoutSession()
     }
 
+    const sortedExercises = [...groupedWorkoutExercises].sort((a,b) => a.workoutExerciseId-b.workoutExerciseId)
+
     return (
         <div className="p-4 w-full">
             <BackButton directory={"/"}/>
@@ -36,9 +38,10 @@ export default function WorkoutSessionPage() {
             <div className="h-[2px] bg-gray-100 mb-6"></div>
 
             <div className="space-y-4 w-full">
-                {groupedWorkoutExercises.map((exercise, i) => {
+                {sortedExercises.map((exercise, i) => {
                     const { exerciseName, sets } = exercise;
-                    const isDone = sets.every(
+                    const orderedSets = [...sets].sort((a,b) => a.id-b.id)
+                    const isDone = sets .every(
                         (s) => s.completedReps !== null && s.completedWeight !== null
                     );
 
@@ -99,7 +102,7 @@ export default function WorkoutSessionPage() {
                                         {/* Completed set badges */}
                                         {isDone && (
                                             <div className="flex flex-wrap gap-2 mt-2">
-                                                {sets.map((set, idx) => (
+                                                {orderedSets.map((set, idx) => (
                                                     <span
                                                         key={set.id}
                                                         className="

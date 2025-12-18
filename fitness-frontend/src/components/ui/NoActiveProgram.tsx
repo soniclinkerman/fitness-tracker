@@ -1,19 +1,37 @@
-export default function NoActiveProgram({ onClick }) {
+export default function NoActiveProgram({
+                                            title,
+                                            description,
+                                            onClick,
+                                            variant = "default",
+                                        }) {
     return (
-        <div className="bg-white border border-gray-200 rounded-lg p-10 text-center mb-8">
-            <p className="text-gray-700 font-medium mb-2">
-                You have no active program
-            </p>
-            <p className="text-gray-500 text-sm mb-6">
-                Select a program to start your fitness journey.
+        <button
+            onClick={onClick}
+            className={`
+                w-full text-left
+                rounded-2xl p-6
+                border
+                transition
+                ${
+                variant === "quick"
+                    ? "border-teal-300 bg-teal-50 hover:bg-teal-100"
+                    : "border-gray-200 bg-white hover:bg-gray-50"
+            }
+            `}
+        >
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                {title}
+            </h3>
+
+            <p className="text-sm text-gray-600">
+                {description}
             </p>
 
-            <button
-                onClick={onClick}
-                className="px-4 py-2 bg-green-600 text-white rounded-md text-sm"
-            >
-                Choose Program
-            </button>
-        </div>
+            {variant === "quick" && (
+                <p className="mt-3 text-sm font-medium text-teal-700">
+                    Start now →
+                </p>
+            )}
+        </button>
     );
 }

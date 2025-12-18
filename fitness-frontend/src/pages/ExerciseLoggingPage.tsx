@@ -25,6 +25,12 @@ export default function ExerciseLoggingPage() {
         variables: { id: sessionId, workoutExerciseId: workoutExerciseId },
     });
 
+    const handleReviewState = () =>
+    {
+        setCurrentWorkoutData(workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets)
+        setLogState(LOG_STATE.REVIEW)
+    }
+
 
     const [updateWorkoutSetSession] = useMutation(UPDATE_WORKOUT_SET_SESSIONS, {
         onCompleted: () =>{
@@ -38,9 +44,16 @@ export default function ExerciseLoggingPage() {
 
     useEffect(() => {
         if (workoutSession) {
-            const firstSet =
-                workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets[0];
-            setCurrentWorkoutData([firstSet]);
+            const hasFinished = workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets.map(x => x.completedReps > 0).every(val => val)
+            if(hasFinished)
+            {
+                handleReviewState()
+            }
+            else {
+                const firstSet =
+                    workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets[0];
+                setCurrentWorkoutData([firstSet]);
+            }
         }
     }, [workoutSession]);
 
@@ -86,7 +99,14 @@ export default function ExerciseLoggingPage() {
     }
 
     const lockInSetInfo = async () => {
-        const cleanedSet = currentWorkoutData.map(({ __typename,exerciseId, ...rest}) => rest)
+        const cleanedSet = currentWorkoutData.map((set,index) => {
+            // This removes unwanted properties and adds the 'order' field
+            const {__typename, exerciseId, ...rest} = set
+            return {
+                ...rest,
+                order: index+1
+            }
+        })
         const variables = { sets: cleanedSet };
         try {
             const response = await updateWorkoutSetSession({ variables });

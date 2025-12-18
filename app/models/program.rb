@@ -1,6 +1,6 @@
 class Program < ApplicationRecord
   validates :name, presence: true
-  has_many :workout_days, -> {order(:day_number)}, dependent: :destroy
+  has_many :workout_days, dependent: :destroy
   belongs_to :user, optional: true
 
   public
@@ -31,9 +31,9 @@ class Program < ApplicationRecord
   end
 
 
+  # When a user finishes all the workoutsessions in a given day and starts on day 1 again
+  # We can restart the progrm
   def restartable?
-    # When a user finishes all the workoutsessions in a given day and starts on day 1 again
-    # We can restart the progrm
 
     all_sessions = user.workout_sessions.where(program_id: id)
     active_sessions = user.workout_sessions.where(archived_at: nil)
@@ -53,5 +53,13 @@ class Program < ApplicationRecord
     raise ArgumentError, "Program can not be restarted" unless restartable?
     user.workout_sessions.where(archived_at: nil)
                     .update_all(archived_at: Time.current)
+  end
+
+  def last_day
+    workout_days.order(day_number: :desc).first
+  end
+
+  def is_last_day_of_program?(workout_day)
+     workout_day == last_day
   end
 end

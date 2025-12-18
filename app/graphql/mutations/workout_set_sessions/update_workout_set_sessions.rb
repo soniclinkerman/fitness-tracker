@@ -9,7 +9,8 @@ module Mutations
         :completed_weight,
         :notes,
         :is_failure,
-        :rpe
+        :rpe,
+        :order
       ]
       def resolve(**args)
         current_user = context[:current_user]

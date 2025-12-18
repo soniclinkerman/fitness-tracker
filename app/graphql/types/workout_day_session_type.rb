@@ -11,7 +11,7 @@ module Types
       sessions = object.workout_set_sessions
 
       sessions = sessions.where(workout_exercise_id: workout_exercise_id) if workout_exercise_id.present?
-
+      sessions = sessions.ordered
       grouped = sessions.group_by { |session| session.workout_exercise_id }
       grouped_exercises = []
       grouped.each do |workout_exercise_id,rest|

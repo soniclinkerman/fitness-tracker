@@ -5,4 +5,5 @@ class WorkoutSetSession < ApplicationRecord
   belongs_to :workout_day_session, optional: true
   delegate :workout_session, to: :workout_day_session, allow_nil: true
 
+  scope :ordered, -> {order(:order)}
 end

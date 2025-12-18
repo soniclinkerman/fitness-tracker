@@ -23,7 +23,7 @@ module Mutations
         workout_session = WorkoutSession.create!(user_id: , program_id:)
         workout_day_session = WorkoutDaySession.create!(workout_session: workout_session, workout_day_id: workout_day.id )
         workout_exercises.each do |workout_exercise|
-          workout_exercise.workout_sets.each do |workout_set|
+          workout_exercise.workout_sets.each_with_index do |workout_set,index|
             workout_set_session = WorkoutSetSession.create!(
               user_id: ,
               exercise_id: workout_exercise.exercise.id,
@@ -33,6 +33,7 @@ module Mutations
               planned_weight: workout_set.planned_weight,
               target_reps_min: workout_set.target_reps_min,
               target_reps_max: workout_set.target_reps_max,
+              order: index+1
               )
           end
         end

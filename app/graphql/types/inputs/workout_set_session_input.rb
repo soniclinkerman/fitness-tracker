@@ -9,6 +9,7 @@ module Types
       argument :is_failure, Boolean, required: false
       argument :target_reps_min, Int, required: false
       argument :target_reps_max, Int, required: false
+      argument :order, Int, required:true
     end
   end
 end

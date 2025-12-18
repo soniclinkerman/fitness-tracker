@@ -17,6 +17,7 @@ export const GET_WORKOUT_SESSION = gql`
           targetRepsMax
           completedReps
           completedWeight
+          order
         }
       }
     }

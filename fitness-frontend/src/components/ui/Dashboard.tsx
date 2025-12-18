@@ -6,7 +6,7 @@ import {useNavigate} from "react-router-dom";
 import NextWorkoutCard from "./NextWorkoutCard.tsx";
 import {useMutation, useQuery} from "@apollo/client/react";
 import {START_WORKOUT_SESSION} from "../../graphql/mutations/workoutSessionMutations.ts";
-import {GET_ACTIVE_WORKOUT_SESSION, GET_WORKOUT_SESSION} from "../../graphql/queries/workoutSessionQueries.ts";
+import {GET_ACTIVE_WORKOUT_SESSION} from "../../graphql/queries/workoutSessionQueries.ts";
 import {useEffect, useState} from "react";
 
 
@@ -41,6 +41,9 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
         const id = workoutSession.id
         navigate(`/workout-sessions/${id}`)
     }
+
+    // Handle sorting in the frontend.
+    const sortedDays = activeProgram ? [...activeProgram.workoutDays].sort((a, b) => a.dayNumber - b.dayNumber) : null
 
     if (loading) return <div>Loading...</div>
 
@@ -77,15 +80,32 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
 
                     <div>
                         <WeekDayList
+                            onClick={resumeWorkout}
                             title={"This Week"}
                             workoutSession={workoutSession}
-                            workoutDays={activeProgram.workoutDays}
+                            workoutDays={sortedDays}
                             nextWorkoutDay={activeProgram.nextWorkoutDay}
                         />
                     </div>
                 </>
             ) : (
-                <NoActiveProgram  onClick={() => navigate(`/programs`)}/>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+                    <NoActiveProgram
+                        title="Choose a Program"
+                        description="Browse programs and follow a structured plan"
+                        onClick={() => navigate("/programs")}
+                    />
+
+                    <div className="text-center text-gray-500 font-semibold mx-2">OR</div>
+
+                    <NoActiveProgram
+                        title="Start a Workout"
+                        description="Jump straight into a workout without a program"
+                        // onClick={startWorkout} // Uncomment this when we move on to this next
+                        variant="quick"
+                    />
+                </div>
+
             )}
 
             {/* Get Started */}

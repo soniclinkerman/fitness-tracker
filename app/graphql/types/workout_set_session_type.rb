@@ -14,5 +14,6 @@ module Types
     field :planned_weight, Float, null: true
     field :target_reps_min, Int, null: true
     field :target_reps_max, Int, null: true
+    field :order, Int, null:true
   end
 end

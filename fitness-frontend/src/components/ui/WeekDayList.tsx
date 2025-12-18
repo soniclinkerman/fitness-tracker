@@ -1,4 +1,4 @@
-export default function WeekDayList({ workoutDays: days, nextWorkoutDay, title, workoutSession }) {
+export default function WeekDayList({ workoutDays: days, nextWorkoutDay, title, workoutSession, onClick }) {
     return (
         <div className="mt-8">
             <h2 className="text-lg font-semibold mb-3">{title}</h2>
@@ -12,6 +12,7 @@ export default function WeekDayList({ workoutDays: days, nextWorkoutDay, title, 
                     const isInProgress = workoutSession && day.id === workoutSession.workoutDaySession.workoutDayId
                     return (
                         <button
+                            onClick={isInProgress ? onClick : null}
                             key={day.id}
                             disabled={isFuture}
                             className={`

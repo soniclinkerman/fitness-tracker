@@ -26,7 +26,7 @@ interface WorkoutSetForm {
 }
 // Need to add a mutation and modal that allows the user to add exercises to a workout day
 const WorkoutDayDetailPage = () => {
-    const DEFAULT_SETS = 3
+    const DEFAULT_SETS = 1
     const REPS_MIN = 3
     const REPS_MAX = 3
     const {dayId} = useParams()
@@ -133,7 +133,7 @@ const WorkoutDayDetailPage = () => {
 
     const handleExerciseAutoFill = (id: number) => {
         setSelectedExerciseId(id);
-        const exercise =exerciseData.exercises.find(exercise => exercise.id === id)
+        const exercise = exerciseData.exercises.find(exercise => Number(exercise.id) === id)
         if (exercise) {
             setSetCount(exercise.defaultSets || DEFAULT_SETS); // Set the number of sets
             // Create an array of sets with default values for weight, reps, etc.
