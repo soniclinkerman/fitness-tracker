@@ -16,12 +16,14 @@ interface ExerciseCardProps {
     modalMode?: string;
 }
 
-const ExerciseCard = ({ exercise, onEdit, onDelete }: ExerciseCardProps) => {
+const ExerciseCard = ({ exercise, onClick, onEdit, onDelete }: ExerciseCardProps) => {
     const { name, description, category, defaultSets, defaultRepsMin, defaultRepsMax } = exercise;
 
     const color = CATEGORY_COLORS[category] || CATEGORY_COLORS.UNCATEGORIZED
     return (
-        <div className="w-full bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+        <div
+            onClick={() => onClick?.(exercise)}
+            className="w-full bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center gap-4">
             {/* Icon */}
             <div className="p-3 bg-gray-50 rounded-xl text-gray-600 shrink-0">
                 <DumbbellIcon className="w-5 h-5" /> {/* or any Heroicon placeholder */}
@@ -51,16 +53,20 @@ const ExerciseCard = ({ exercise, onEdit, onDelete }: ExerciseCardProps) => {
 
                 {/* Buttons */}
                 <div className="flex gap-2 mt-3">
+                    {onEdit &&
                     <button
                         onClick={() => onEdit?.(exercise)}
                         className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-200">
                         Edit
                     </button>
+                    }
+                    {onDelete &&
                     <button
                         onClick={() => onDelete?.(exercise)}
                         className="bg-red-100 text-red-600 px-3 py-1 rounded-md text-sm hover:bg-red-200" >
                         Delete
                     </button>
+                    }
                 </div>
             </div>
         </div>

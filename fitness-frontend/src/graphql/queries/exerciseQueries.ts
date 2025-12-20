@@ -14,3 +14,23 @@ query GET_EXERCISE($id: ID){
   }
 
 `;
+
+export const GET_EXERCISE_HISTORY = gql`
+query GET_EXERCISE_HISTORY($exerciseId: ID!){
+  exerciseHistory(exerciseId: $exerciseId){
+    workoutSession{
+      id
+      updatedAt
+      
+    }
+    sets{
+      id
+      userId
+      exerciseId
+      completedReps
+      completedWeight
+      performedAt
+    }
+  }
+}
+`

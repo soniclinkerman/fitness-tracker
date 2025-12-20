@@ -9,6 +9,7 @@ const MainLayout = (): JSX.Element => {
                     <Link to={"/"}>Home</Link>
                     <Link to="/exercises">Exercises</Link>
                     <Link to="/programs">Programs</Link>
+                    <Link to="/workout-history">Progress</Link>
                 </nav>
             </header>
 
