@@ -1,29 +1,127 @@
 import BackButton from "../components/BackButton.tsx";
-import { useEffect, useState } from "react";
+import {useEffect, useRef, useState} from "react";
 import { GET_WORKOUT_SESSION } from "../graphql/queries/workoutSessionQueries.ts";
 import {useMutation, useQuery} from "@apollo/client/react";
 import {useNavigate, useParams} from "react-router-dom";
 import {UPDATE_WORKOUT_SET_SESSIONS} from "../graphql/mutations/workoutSetSessionMutations.ts";
-
+import {GET_EXERCISE_HISTORY} from "../graphql/queries/exerciseQueries.ts";
+import _ from 'lodash';
+import {retry} from "rxjs";
+import useWorkoutSession from "../hooks/useWorkoutSession.ts";
+import Modal from "../components/ui/Modal.tsx";
 const LOG_STATE = {
     LOGGING: 'LOGGING',
     REVIEW: 'REVIEW'
 }
-export default function ExerciseLoggingPage() {
-    const [logState, setLogState] = useState(LOG_STATE.LOGGING)
-    const [completedReps, setCompletedReps] = useState(0)
-    const [completedWeight, setCompletedWeight] = useState(0)
-    const [workoutSession, setWorkoutSession] = useState();
-    const [currentSetIndex, setCurrentSetIndex] = useState(0);
-    const [currentWorkoutData, setCurrentWorkoutData] = useState([]);
 
+export default function ExerciseLoggingPage() {
     const params = useParams();
     const navigate = useNavigate()
     const {sessionId, workoutExerciseId} = params
 
-    const { data, loading, error } = useQuery(GET_WORKOUT_SESSION, {
-        variables: { id: sessionId, workoutExerciseId: workoutExerciseId },
-    });
+    const { workoutSession, loading, error } = useWorkoutSession(sessionId, workoutExerciseId);
+    // const [workoutSession, setWorkoutSession] = useState();
+
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [logState, setLogState] = useState(LOG_STATE.LOGGING)
+    const [completedReps, setCompletedReps] = useState(0)
+    const [completedWeight, setCompletedWeight] = useState(0)
+
+    const [currentSetIndex, setCurrentSetIndex] = useState(0);
+    const [currentWorkoutData, setCurrentWorkoutData] = useState([]);
+
+    const [historicalDataSet,setHistoricalDataSet] = useState([])
+
+
+    const hasPopulated = useRef(false)
+
+    const {data: historicalData,loading:historicalLoading, error:historicalError} = useQuery(GET_EXERCISE_HISTORY, {
+        variables: {exerciseId: workoutSession?.workoutDaySession?.groupedWorkoutExercises[0].sets[0].exerciseId}
+    })
+
+
+
+
+    useEffect(() => {
+        if(currentWorkoutData.length < 1 || hasPopulated.current) return
+        console.log(currentWorkoutData)
+
+        if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
+            const setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`) as string)
+            const result = currentWorkoutData.map(set => {
+                if(setData[set.id])
+                {
+                    return  {...set, completedReps: setData[set.id].completedReps, completedWeight: setData[set.id].completedWeight}
+                }
+                return set
+            })
+            console.log(setData)
+            setCurrentWorkoutData(result)
+            setCompletedReps(result[result.length-1].completedReps)
+            setCompletedWeight(result[result.length-1].completedWeight)
+            setCurrentSetIndex(result.length-1)
+            hasPopulated.current=true
+            if(result.length === workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets.length)
+            {
+                setLogState(LOG_STATE.REVIEW)
+            }
+        }
+        else{
+            console.log( workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets)
+            // const firstSet =
+            //     workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets[0];
+            // setCurrentWorkoutData([firstSet]);
+        }
+    }, [currentWorkoutData]);
+
+
+    // This runs when we have saved data. Normally happens when we've completed a workout
+    // useEffect(() => {
+    //     if (data) setWorkoutSession(data.workoutSession);
+    // }, [data]);
+
+
+    // This runs in the event we have previous from a users lift in the last session.
+    // This can allow them to see what they did last week without needing to switch to the progress page
+    useEffect(() => {
+        if(historicalData && historicalData.exerciseHistory.length > 0)
+        {
+            const {sets} = historicalData.exerciseHistory[0]
+            setHistoricalDataSet(sets)
+        }
+    }, [historicalData])
+
+
+    useEffect(() => {
+        if (workoutSession) {
+            const hasFinished = workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets.map(x => x.completedReps > 0).every(val => val)
+            if(hasFinished)
+            {
+                handleReviewState()
+            }
+            else {
+                const firstSet =
+                    workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets[0];
+
+                const sets = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`))
+                const finalSets = []
+                if(sets) {
+                    workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets.forEach((set) => {
+                        const storageData = sets[set.id]
+                        if (storageData) {
+                            const completedWeight = storageData.completedWeight
+                            const completedReps = storageData.completedReps
+                            const result = {...set, completedWeight: completedWeight, completedReps: completedReps}
+                            finalSets.push(result)
+                        }
+                    })
+                }
+
+                const currentSetList = finalSets.length > 0 ? finalSets : [firstSet];
+                setCurrentWorkoutData(currentSetList);
+            }
+        }
+    }, [workoutSession]);
 
     const handleReviewState = () =>
     {
@@ -38,24 +136,9 @@ export default function ExerciseLoggingPage() {
         }
     })
 
-    useEffect(() => {
-        if (data) setWorkoutSession(data.workoutSession);
-    }, [data]);
 
-    useEffect(() => {
-        if (workoutSession) {
-            const hasFinished = workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets.map(x => x.completedReps > 0).every(val => val)
-            if(hasFinished)
-            {
-                handleReviewState()
-            }
-            else {
-                const firstSet =
-                    workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets[0];
-                setCurrentWorkoutData([firstSet]);
-            }
-        }
-    }, [workoutSession]);
+
+
 
     const moveToNextSet = () => {
         const sets = workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets;
@@ -66,6 +149,17 @@ export default function ExerciseLoggingPage() {
         const nextIndex = currentSetIndex + 1;
         const nextSet = sets[nextIndex];
 
+        console.log(completedWeight)
+        const setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`))
+        if(setData)
+        {
+            setData[nextSet.id] = {completedReps: completedReps, completedWeight: completedWeight}
+            localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
+        }
+
+
+
+        // console.log(storageSet)
         setCurrentSetIndex(nextIndex);
         setCurrentWorkoutData((prev) => [...prev, nextSet]);
     };
@@ -79,6 +173,14 @@ export default function ExerciseLoggingPage() {
                 completedReps
             };
             updated[currentSetIndex] = setToUpdate
+
+            let setData = {}
+            if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
+                setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`) as string)
+            }
+            setData[updated[currentSetIndex].id] = {completedReps: updated[currentSetIndex].completedReps, completedWeight: updated[currentSetIndex].completedWeight}
+            localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
+
             return updated
         })
         // setCompletedWeight(0)
@@ -88,6 +190,7 @@ export default function ExerciseLoggingPage() {
     const handleNextSet = () => {
         const sets = workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets;
         const totalSets = sets.length;
+
         updateCurrentSet()
         if (currentSetIndex >= totalSets - 1)
         {
@@ -111,6 +214,10 @@ export default function ExerciseLoggingPage() {
         try {
             const response = await updateWorkoutSetSession({ variables });
             console.log("Updated!", response);
+            if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
+                localStorage.removeItem(`${sessionId}${workoutExerciseId}`)
+            }
+
         } catch (error) {
             console.error("Mutation error:", error);
         }
@@ -120,11 +227,35 @@ export default function ExerciseLoggingPage() {
         setCurrentWorkoutData(prev => {
             const updated = [...prev];
             updated[index] = { ...updated[index], [field]: value };
+
+            let setData = {}
+            if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
+                setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`) as string)
+            }
+            setData[updated[index].id] = {completedReps: updated[index].completedReps, completedWeight: updated[index].completedWeight}
+            localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
+
+            // console.log(setData)
             return updated;
         });
     };
 
+    const autoPopulateSet = (index) => {
+        setCompletedWeight(historicalDataSet[index].completedWeight)
+        setCompletedReps(historicalDataSet[index].completedReps)
+
+    }
+
+    const revertChanges = () => {
+        setCurrentWorkoutData(sets)
+        localStorage.removeItem(`${sessionId}${workoutExerciseId}`)
+        navigate(`/workout-sessions/${workoutSession.id}`)
+    }
+
+
+
     if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error loading workout session</div>;
 
     const exercise = workoutSession?.workoutDaySession?.groupedWorkoutExercises?.[0];
     if (!exercise) return <div>No exercise found.</div>;
@@ -135,12 +266,40 @@ export default function ExerciseLoggingPage() {
     const buttonLabel =
         currentSetIndex >= totalSets - 1 ? "Review All Sets" : "Complete Set";
 
+    let hasUnsavedChanges = false;
+
+    const hasBeenSavedBefore = sets.map(x => x.completedReps !== null && x.completedWeight !== null ).some(val => val)
+    console.log(hasBeenSavedBefore)
+    if(logState === LOG_STATE.REVIEW && hasBeenSavedBefore)
+    {
+            if(!_.isEqual(sets, currentWorkoutData))
+            {
+                hasUnsavedChanges=true
+            }
+    }
+
+    const handleBack = () => {
+        if(hasUnsavedChanges)
+        {
+            setIsModalOpen(true);
+        }
+        else{
+            navigate(`/workout-sessions/${params.sessionId}`)
+        }
+    }
+
     return (
         <div className="p-4 max-w-3xl mx-auto">
-            <BackButton />
+            <BackButton handleButton={handleBack}/>
 
             {/* TITLE */}
             <h1 className="text-2xl font-semibold mt-2">{exerciseName}</h1>
+
+            {hasUnsavedChanges && (
+                <span style={{ color: 'red', fontWeight: 'bold' }} className="text-sm">
+                    Unsaved Changes
+                </span>
+            )}
 
             {logState === LOG_STATE.LOGGING &&
                 <div>
@@ -197,24 +356,73 @@ export default function ExerciseLoggingPage() {
                 </div>
 
                 {/* INPUT GRID */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-[auto_1fr_1fr] gap-4 mb-6">
+                    {/* Auto-populate button */}
+                    <div className="flex flex-col items-center">
+                        {/* Spacer to match label height */}
+                        <div className="h-5 mb-1" />
+
+                        {(historicalDataSet[currentSetIndex] !== undefined) &&
+                        <button
+                            onClick={() => autoPopulateSet(currentSetIndex)}
+                            title="Use last workout values"
+                            className="
+                h-10 w-10
+                flex items-center justify-center
+                rounded-lg
+                border border-gray-300
+                text-gray-500
+                hover:text-teal-600 hover:border-teal-600
+                transition
+            "
+                        >
+                            ⟳
+                        </button>
+                        }
+                    </div>
+
+
+                    {/* Reps */}
                     <div>
                         <label className="block text-sm text-gray-500 mb-1">Reps</label>
                         <input
                             className="w-full border rounded-lg p-3 text-center"
                             type="number"
-                            defaultValue={currentWorkoutData[currentSetIndex]?.completedReps || 0}
-                            onChange={(e) => setCompletedReps(Number(e.target.value))}
+                            value={completedReps}
+                            onChange={
+                            (e) => {
+                                const currentSet = currentWorkoutData[currentSetIndex]
+                                setCompletedReps(Number(e.target.value))
+                                let setData = {}
+                                console.log(currentSet)
+                                if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
+                                    setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`) as string)
+                                }
+                                setData[currentSet.id] = {completedReps: Number(e.target.value), completedWeight: completedWeight}
+                                localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
+                                console.log(setData)
+                            }
+                        }
                         />
                     </div>
 
+                    {/* Weight */}
                     <div>
                         <label className="block text-sm text-gray-500 mb-1">Weight (lbs)</label>
                         <input
                             className="w-full border rounded-lg p-3 text-center"
                             type="number"
-                            defaultValue={currentWorkoutData[currentSetIndex]?.completedWeight || 0}
-                            onChange={(e) => setCompletedWeight(Number(e.target.value))}
+                            value={completedWeight}
+                            onChange={(e) => {
+                                const currentSet = currentWorkoutData[currentSetIndex]
+                                setCompletedWeight(Number(e.target.value))
+                                let setData = {}
+                                if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
+                                    setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`) as string)
+                                }
+                                setData[currentSet.id] = {completedReps: completedReps, completedWeight: Number(e.target.value)}
+                                localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
+                            }}
                         />
                     </div>
                 </div>
@@ -240,6 +448,7 @@ export default function ExerciseLoggingPage() {
                 <div className="mt-6 space-y-6">
                     {/* TITLE */}
                     <h2 className="text-lg font-semibold text-gray-800">Review Your Sets</h2>
+
 
                     {/* SET LIST */}
                     <div className="space-y-4">
@@ -313,6 +522,37 @@ export default function ExerciseLoggingPage() {
                     </button>
                 </div>
             }
+
+            {isModalOpen && (
+                <Modal onClose={() => setIsModalOpen(false)} title={'Unsaved Changes'}>
+                    <div className="flex flex-col gap-4">
+            <span className="text-gray-700 text-sm">
+                You have unsaved changes. Do you want to revert them or save?
+            </span>
+
+                        {/* Buttons Container */}
+                        <div className="flex flex-col gap-3">
+                            {/* Revert Changes Button */}
+                            <button
+                                className="bg-gray-100 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
+                                onClick={revertChanges}
+                            >
+                                Revert Changes
+                            </button>
+
+                            {/* Save Changes Button */}
+                            <button
+                                type="button"
+                                disabled={loading}
+                                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
+                                onClick={lockInSetInfo}
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
         </div>
 
     );

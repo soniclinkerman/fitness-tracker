@@ -1,8 +1,9 @@
 import {useMutation, useQuery} from "@apollo/client/react";
-import { GET_WORKOUT_SESSION } from "../graphql/queries/workoutSessionQueries.ts";
+import {GET_ACTIVE_WORKOUT_SESSION, GET_WORKOUT_SESSION} from "../graphql/queries/workoutSessionQueries.ts";
 import { useNavigate, useParams } from "react-router-dom";
 import BackButton from "../components/BackButton.tsx";
 import {COMPLETE_WORKOUT_SESSION} from "../graphql/mutations/workoutSessionMutations.ts";
+import {GET_PROGRAM} from "../graphql/queries/programQueries.ts";
 
 export default function WorkoutSessionPage() {
     const params = useParams();
@@ -11,7 +12,12 @@ export default function WorkoutSessionPage() {
     const [completeWorkoutSession] = useMutation(COMPLETE_WORKOUT_SESSION, {
         onCompleted: () => {
             Promise.resolve().then(() => navigate("/"));
-        }
+            const sets = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`))
+        },
+        refetchQueries: [
+            { query: GET_ACTIVE_WORKOUT_SESSION },
+        ] as Parameters<typeof useMutation>[1]["refetchQueries"],
+
     });
 
     const { data, loading, error } = useQuery(GET_WORKOUT_SESSION, {
