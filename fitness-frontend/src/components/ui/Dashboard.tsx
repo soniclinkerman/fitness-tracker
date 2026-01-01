@@ -5,7 +5,7 @@ import NoActiveProgram from "./NoActiveProgram.js";
 import {useNavigate} from "react-router-dom";
 import NextWorkoutCard from "./NextWorkoutCard.tsx";
 import {useMutation, useQuery} from "@apollo/client/react";
-import {START_WORKOUT_SESSION} from "../../graphql/mutations/workoutSessionMutations.ts";
+import {START_QUICK_WORKOUT_SESSION, START_WORKOUT_SESSION} from "../../graphql/mutations/workoutSessionMutations.ts";
 import {GET_ACTIVE_WORKOUT_SESSION} from "../../graphql/queries/workoutSessionQueries.ts";
 import {useEffect, useState} from "react";
 
@@ -22,10 +22,17 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
     }, [data]);
 
     const [startWorkoutSession] = useMutation(START_WORKOUT_SESSION, {
-        onCompleted: (data) => {
+        onCompleted: (data) =>{
             const id = data.startWorkoutSession.workoutSession.id
             navigate(`/workout-sessions/${id}`)
         },
+    })
+
+    const [startQuickWorkoutSession] = useMutation(START_QUICK_WORKOUT_SESSION, {
+        onCompleted: (data) =>{
+            const id = data.startQuickWorkoutSession.workoutSession.id
+            navigate(`/workout-sessions/${id}`)
+        }
     })
 
     const startWorkout = async () => {
@@ -101,7 +108,7 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
                     <NoActiveProgram
                         title="Start a Workout"
                         description="Jump straight into a workout without a program"
-                        // onClick={startWorkout} // Uncomment this when we move on to this next
+                        onClick={startQuickWorkoutSession} // Uncomment this when we move on to this next
                         variant="quick"
                     />
                 </div>

@@ -1,13 +1,203 @@
-import {useMutation, useQuery} from "@apollo/client/react";
+import {useLazyQuery, useMutation, useQuery} from "@apollo/client/react";
 import {GET_ACTIVE_WORKOUT_SESSION, GET_WORKOUT_SESSION} from "../graphql/queries/workoutSessionQueries.ts";
 import { useNavigate, useParams } from "react-router-dom";
 import BackButton from "../components/BackButton.tsx";
-import {COMPLETE_WORKOUT_SESSION} from "../graphql/mutations/workoutSessionMutations.ts";
+import {
+    ADD_EXERCISE_TO_WORKOUT_SESSION,
+    COMPLETE_WORKOUT_SESSION
+} from "../graphql/mutations/workoutSessionMutations.ts";
 import {GET_PROGRAM} from "../graphql/queries/programQueries.ts";
+import {useEffect, useRef, useState} from "react";
+import {TrashIcon} from "@heroicons/react/24/outline";
+import {PlusIcon} from "@heroicons/react/16/solid";
+import {GET_EXERCISES} from "../graphql/queries/exerciseQueries.ts";
+import type {ModalMode} from "../types/ModalMode.ts";
+import Modal from "../components/ui/Modal.tsx";
 
 export default function WorkoutSessionPage() {
     const params = useParams();
     const navigate = useNavigate();
+    const { data: exerciseData } = useQuery(GET_EXERCISES);
+
+    // INPUTS
+    const [selectedExerciseId,setSelectedExerciseId] = useState<number>(null)
+    const [searchTerm,setSearchTerm] = useState<string>("")
+    const [setCount,setSetCount] = useState<number>(null)
+    const [dropdownOpen, setDropDownOpen] = useState<boolean>(false)
+    const [modalMode,setModalMode] = useState<ModalMode>('CLOSED')
+
+
+    const resetInput = () => {
+        setSelectedExerciseId(null)
+        setSearchTerm('')
+        setModalMode('CLOSED')
+        setSetCount(null)
+        setDropDownOpen(false)
+    }
+
+    const filteredExercises = exerciseData?.exercises?.filter((ex) =>
+        ex.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || exerciseData?.exercises;
+
+
+
+    const handleFocus = () => {
+        setDropDownOpen(true)
+    }
+    const myRef = useRef<HTMLDivElement | null>(null)
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        const variables = {
+            workoutSessionId: params.id,
+            exerciseId: selectedExerciseId,
+            setCount: Number(setCount)
+        }
+       await addExerciseToWorkoutSession({variables: variables})
+
+    }
+
+    useEffect(() => {
+        const handleMouseDown = (e)=> {
+
+            if( myRef.current && !myRef.current.contains(e.target as Node))
+            {
+                setDropDownOpen(false)
+            }
+
+        }
+        document.addEventListener('mousedown', handleMouseDown);
+        return ()=> document.removeEventListener('mousedown', handleMouseDown);
+    }, [])
+
+    // Refactor Later
+    const handleSetCount = (input) => {
+
+        if(input.trim() === "")
+        {
+            setSetCount(null)
+            return
+        }
+        const number = Number(input)
+
+        if(Number.isInteger(number) && number > 0)
+        {
+            setSetCount(input)
+        }
+        else{
+            setSetCount('')
+        }
+    }
+
+
+
+    const selectedExercise = filteredExercises?.find((exercise) => Number(exercise.id) === Number(selectedExerciseId))
+    const isValidSetCount = setCount > 0
+    const isValidExercise =selectedExercise?.name === searchTerm &&isValidSetCount
+
+
+    const createModalContent = (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Dropdown */}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Exercise
+                </label>
+                <div className="mb-5" ref={myRef}>
+                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Exercise Name</label>
+
+                    <input
+                        type="text"
+                        placeholder={"Search Exercises..."}
+                        value={searchTerm}
+                        onFocus={handleFocus}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg p-2 focus:ring-teal-500 focus:border-teal-500"
+                    />
+                    {dropdownOpen && (
+                        <div className="mt-2 border border-gray-200 rounded-lg bg-white shadow-md relative overflow-hidden">
+                            {/* Scrollable list */}
+                            <div className="max-h-40 overflow-y-auto">
+                                {filteredExercises?.length > 0 ? (
+                                    filteredExercises.map((ex) => (
+                                        <div
+                                            key={ex.id}
+                                            onClick={() => {
+                                                setDropDownOpen(false);
+                                                setSelectedExerciseId(ex.id)
+                                                setSearchTerm(ex.name);
+                                            }}
+                                            className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer flex justify-between items-center transition-colors"
+                                        >
+                                            <span className="font-medium text-gray-700">{ex.name}</span>
+                                            <span className="text-xs text-gray-500 uppercase">{ex.category}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="p-3 text-sm text-gray-500">No matches found.</p>
+                                )}
+                            </div>
+
+
+
+                            {/* Fixed footer */}
+                            <div className="sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent border-t border-gray-200 shadow-inner">
+                                <button
+                                    type="button"
+                                    onClick={() => setModalMode('CREATE_EXERCISE')}
+                                    className="w-full px-4 py-2 text-sm font-semibold text-teal-700 bg-white hover:bg-teal-50 transition-colors rounded-b-lg"
+                                >
+                                    + Create new exercise
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+
+                { selectedExerciseId &&
+                <input
+                    type="text"
+                    placeholder={"Set Count"}
+                    value={setCount}
+                    onChange={(e) => handleSetCount(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-teal-500 focus:border-teal-500"
+                />
+                }
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-2 pt-3">
+                <button
+                    type="button"
+                    onClick={resetInput}
+                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                >
+                    Cancel
+                </button>
+                <button
+                    disabled={!isValidExercise}
+
+                    className={`text-white px-5 py-2.5 rounded-lg ${
+                        isValidExercise ? "bg-blue-700 hover:bg-blue-800" : "bg-gray-400 cursor-not-allowed" 
+                    }`}
+                >
+                    {"Add Exercise"}
+                </button>
+            </div>
+        </form>
+    )
+
+
+
+    const [addExerciseToWorkoutSession] = useMutation(ADD_EXERCISE_TO_WORKOUT_SESSION, {
+        onCompleted: () => {
+            resetInput()
+        },
+        refetchQueries: [
+            {query: GET_WORKOUT_SESSION}
+        ] as Parameters<typeof useMutation>[1]["refetchQueries"],
+
+    })
 
     const [completeWorkoutSession] = useMutation(COMPLETE_WORKOUT_SESSION, {
         onCompleted: () => {
@@ -131,6 +321,8 @@ export default function WorkoutSessionPage() {
                     );
                 })}
 
+                <button onClick={()=> setModalMode('CREATE')}>Add Exercise</button>
+
                 <button
                     onClick={completeWorkout}
                     className="
@@ -141,6 +333,13 @@ export default function WorkoutSessionPage() {
                 >
                     Complete Workout
                 </button>
+                {modalMode !=='CLOSED' &&
+                    <Modal key={modalMode} onClose={resetInput} title={'Add Exercise'}>
+                        {createModalContent}
+                    </Modal>
+
+                }
+
             </div>
         </div>
     );

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_18_044855) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_30_203159) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -101,7 +101,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_044855) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "workout_day_id"
+    t.bigint "workout_session_id"
     t.index ["exercise_id"], name: "index_workout_exercises_on_exercise_id"
+    t.index ["workout_session_id"], name: "index_workout_exercises_on_workout_session_id"
   end
 
   create_table "workout_sessions", force: :cascade do |t|
@@ -163,6 +165,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_18_044855) do
   add_foreign_key "workout_day_sessions", "workout_sessions"
   add_foreign_key "workout_days", "programs"
   add_foreign_key "workout_exercises", "exercises"
+  add_foreign_key "workout_exercises", "workout_sessions"
   add_foreign_key "workout_sessions", "programs"
   add_foreign_key "workout_sessions", "users"
   add_foreign_key "workout_set_sessions", "exercises"
