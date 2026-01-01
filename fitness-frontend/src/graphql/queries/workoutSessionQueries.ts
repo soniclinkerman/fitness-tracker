@@ -29,6 +29,7 @@ export const GET_ACTIVE_WORKOUT_SESSION = gql`
 query FetchActiveWorkoutSession{
   activeWorkoutSession{
     id
+    startedAt
     workoutDaySession{
       workoutDayId
     }

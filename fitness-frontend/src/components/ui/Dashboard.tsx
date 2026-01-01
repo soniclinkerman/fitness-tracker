@@ -8,6 +8,7 @@ import {useMutation, useQuery} from "@apollo/client/react";
 import {START_QUICK_WORKOUT_SESSION, START_WORKOUT_SESSION} from "../../graphql/mutations/workoutSessionMutations.ts";
 import {GET_ACTIVE_WORKOUT_SESSION} from "../../graphql/queries/workoutSessionQueries.ts";
 import {useEffect, useState} from "react";
+import ActiveWorkoutSessionCard from "./ActiveWorkoutSessionCard.tsx";
 
 
 export default function Dashboard({ activeProgram, totalWorkouts, currentWeek }) {
@@ -54,6 +55,57 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
 
     if (loading) return <div>Loading...</div>
 
+    const activeProgramContent = (
+        <>
+            <div className="mb-5">
+                <h2 className="text-lg font-semibold mb-3">Next Workout</h2>
+                <NextWorkoutCard day={activeProgram?.nextWorkoutDay} onStart={workoutSession?.id ? resumeWorkout : startWorkout} active={workoutSession}/>
+            </div>
+
+            <ActiveProgramCard program={activeProgram} />
+
+            <div>
+                <WeekDayList
+                    onClick={resumeWorkout}
+                    title={"This Week"}
+                    workoutSession={workoutSession}
+                    workoutDays={sortedDays}
+                    nextWorkoutDay={activeProgram?.nextWorkoutDay}
+                />
+            </div>
+        </>
+    )
+
+    const activeWorkoutSessionContent = (
+        <>
+            <div className="mb-5">
+                <h2 className="text-lg font-semibold mb-3">In Progress</h2>
+            </div>
+
+            <ActiveWorkoutSessionCard workoutSession={workoutSession} onClick={resumeWorkout}/>
+        </>
+    )
+
+    const noActiveSessionOrProgramContent = (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+            <NoActiveProgram
+                title="Choose a Program"
+                description="Browse programs and follow a structured plan"
+                onClick={() => navigate("/programs")}
+            />
+
+            <div className="text-center text-gray-500 font-semibold mx-2">OR</div>
+
+            <NoActiveProgram
+                title="Start a Workout"
+                description="Jump straight into a workout without a program"
+                onClick={startQuickWorkoutSession}
+                variant="quick"
+            />
+        </div>
+    )
+
+
     return (
         <div className="p-6 max-w-4xl mx-auto">
 
@@ -76,47 +128,12 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
             </div>
 
             {/* Conditional */}
-            {activeProgram ? (
-                <>
-                    <div className="mb-5">
-                        <h2 className="text-lg font-semibold mb-3">Next Workout</h2>
-                        <NextWorkoutCard day={activeProgram.nextWorkoutDay} onStart={workoutSession?.id ? resumeWorkout : startWorkout}active={workoutSession}/>
-                    </div>
-
-                    <ActiveProgramCard program={activeProgram} />
-
-                    <div>
-                        <WeekDayList
-                            onClick={resumeWorkout}
-                            title={"This Week"}
-                            workoutSession={workoutSession}
-                            workoutDays={sortedDays}
-                            nextWorkoutDay={activeProgram.nextWorkoutDay}
-                        />
-                    </div>
-                </>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
-                    <NoActiveProgram
-                        title="Choose a Program"
-                        description="Browse programs and follow a structured plan"
-                        onClick={() => navigate("/programs")}
-                    />
-
-                    <div className="text-center text-gray-500 font-semibold mx-2">OR</div>
-
-                    <NoActiveProgram
-                        title="Start a Workout"
-                        description="Jump straight into a workout without a program"
-                        onClick={startQuickWorkoutSession} // Uncomment this when we move on to this next
-                        variant="quick"
-                    />
-                </div>
-
-            )}
+            {activeProgram && activeProgramContent}
+            {(!activeProgram && workoutSession) && activeWorkoutSessionContent}
+            { (!activeProgram && !workoutSession) && noActiveSessionOrProgramContent}
 
             {/* Get Started */}
-            {!activeProgram && (
+            {(!activeProgram && !workoutSession) && (
                 <div className="mt-10 space-y-3">
 
                     <div className="flex gap-3 items-center p-4 bg-white border border-gray-200 rounded-lg">
