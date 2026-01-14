@@ -101,3 +101,19 @@ mutation AddExerciseToWorkoutSession(
   }
 }
 `
+
+export const DELETE_EXERCISE_FROM_WORKOUT_SESSION = gql`
+mutation DeleteExerciseFromWorkoutSession($id: ID!) {
+  deleteExerciseFromWorkoutSession(input: {id: $id}) {
+    workoutSession {
+      id
+      startedAt
+      completedAt
+
+      workoutDaySession {
+        id
+      }
+    }
+  }
+}
+`

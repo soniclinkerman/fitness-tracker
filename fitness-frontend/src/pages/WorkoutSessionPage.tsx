@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import BackButton from "../components/BackButton.tsx";
 import {
     ADD_EXERCISE_TO_WORKOUT_SESSION,
-    COMPLETE_WORKOUT_SESSION
+    COMPLETE_WORKOUT_SESSION, DELETE_EXERCISE_FROM_WORKOUT_SESSION
 } from "../graphql/mutations/workoutSessionMutations.ts";
 import {GET_PROGRAM} from "../graphql/queries/programQueries.ts";
 import {useEffect, useRef, useState} from "react";
@@ -26,6 +26,7 @@ export default function WorkoutSessionPage() {
     const [dropdownOpen, setDropDownOpen] = useState<boolean>(false)
     const [modalMode,setModalMode] = useState<ModalMode>('CLOSED')
 
+    const [workoutExerciseId,setWorkoutExerciseId] = useState(null)
 
     const resetInput = () => {
         setSelectedExerciseId(null)
@@ -33,6 +34,7 @@ export default function WorkoutSessionPage() {
         setModalMode('CLOSED')
         setSetCount(null)
         setDropDownOpen(false)
+        setWorkoutExerciseId(null)
     }
 
     const filteredExercises = exerciseData?.exercises?.filter((ex) =>
@@ -187,6 +189,24 @@ export default function WorkoutSessionPage() {
         </form>
     )
 
+    const deleteModalContent = (
+        <div>
+            <h2>
+                Are you sure you want to delete this exercise? This will remove it from your
+                session.
+            </h2>
+            <button onClick={async () => {
+                try {
+
+                    await deleteExerciseFromWorkoutSession({variables: {id: workoutExerciseId}});
+                } catch (err) {
+                    console.error("Failed to delete:", err);
+                }
+            }}>Delete
+            </button>
+            <button onClick={resetInput}>Cancel</button>
+        </div>
+    )
 
 
     const [addExerciseToWorkoutSession] = useMutation(ADD_EXERCISE_TO_WORKOUT_SESSION, {
@@ -210,6 +230,15 @@ export default function WorkoutSessionPage() {
 
     });
 
+    const [deleteExerciseFromWorkoutSession] = useMutation(DELETE_EXERCISE_FROM_WORKOUT_SESSION, {
+        onCompleted: () => {
+            resetInput()
+        },
+        refetchQueries: [
+            {query: GET_WORKOUT_SESSION}
+        ] as Parameters<typeof useMutation>[1]["refetchQueries"],
+    })
+
     const { data, loading, error } = useQuery(GET_WORKOUT_SESSION, {
         variables: { id: params.id }
     });
@@ -226,12 +255,20 @@ export default function WorkoutSessionPage() {
     }
 
     const sortedExercises = [...groupedWorkoutExercises].sort((a,b) => a.workoutExerciseId-b.workoutExerciseId)
+    const hasIncompleteSets = sortedExercises.some(exercise =>
+        exercise.sets.some(
+            set =>
+                set.completedReps == null || set.completedWeight == null
+        )
+    );
+
+    const isCompleteDisabled =
+        sortedExercises.length === 0 || hasIncompleteSets;
 
     return (
         <div className="p-4 w-full">
             <BackButton directory={"/"}/>
 
-            <div className="h-[2px] bg-gray-100 mb-6"></div>
 
             <div className="space-y-4 w-full">
                 {sortedExercises.map((exercise, i) => {
@@ -315,7 +352,34 @@ export default function WorkoutSessionPage() {
                                     </div>
                                 </div>
 
-                                <span className="text-gray-400 text-lg">›</span>
+                                <div className="flex items-center gap-3">
+                                    {/* Delete button */}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            console.log(exercise.workoutExerciseId)
+                                            setWorkoutExerciseId(exercise.workoutExerciseId)
+                                            e.stopPropagation(); // 🔴 CRITICAL
+                                            e.preventDefault();
+                                            setModalMode('DELETE')
+                                        }}
+                                        className="
+            flex items-center justify-center
+            w-9 h-9
+            rounded-full
+            text-gray-400
+            hover:text-red-600
+            hover:bg-red-50
+            transition
+        "
+                                        aria-label="Delete exercise"
+                                    >
+                                        🗑
+                                    </button>
+
+                                    {/* Chevron */}
+                                    <span className="text-gray-400 text-lg">›</span>
+                                </div>
                             </div>
                         </button>
                     );
@@ -325,19 +389,39 @@ export default function WorkoutSessionPage() {
 
                 <button
                     onClick={completeWorkout}
-                    className="
-      w-full bg-teal-600 text-white py-4 rounded-xl mt-4
-      flex items-center justify-center gap-2 text-lg
-      hover:bg-teal-700 transition shadow-sm
-    "
+                    disabled={isCompleteDisabled}
+                    className={`
+    w-full py-4 rounded-xl mt-4
+    flex items-center justify-center gap-2 text-lg
+    transition shadow-sm
+
+    ${
+                        isCompleteDisabled
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : "bg-teal-600 text-white hover:bg-teal-700"
+                    }
+  `}
                 >
                     Complete Workout
                 </button>
-                {modalMode !=='CLOSED' &&
-                    <Modal key={modalMode} onClose={resetInput} title={'Add Exercise'}>
-                        {createModalContent}
-                    </Modal>
 
+
+                {modalMode !=='CLOSED' &&(
+                    <div>
+                        {modalMode === 'CREATE' &&
+                            <Modal key={modalMode} onClose={resetInput} title={'Add Exercise'}>
+                                {createModalContent}
+                            </Modal>
+                        }
+
+                        {modalMode === 'DELETE' &&
+                            <Modal key={modalMode} onClose={resetInput} title={'Delete Exercise'}>
+                                {deleteModalContent}
+                            </Modal>
+                        }
+                    </div>
+
+                )
                 }
 
             </div>

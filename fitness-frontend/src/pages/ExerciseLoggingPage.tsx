@@ -3,23 +3,28 @@ import {useEffect, useRef, useState} from "react";
 import { GET_WORKOUT_SESSION } from "../graphql/queries/workoutSessionQueries.ts";
 import {useMutation, useQuery} from "@apollo/client/react";
 import {useNavigate, useParams} from "react-router-dom";
-import {UPDATE_WORKOUT_SET_SESSIONS} from "../graphql/mutations/workoutSetSessionMutations.ts";
+import {
+    DELETE_WORKOUT_SET_SESSIONS,
+    UPDATE_WORKOUT_SET_SESSIONS
+} from "../graphql/mutations/workoutSetSessionMutations.ts";
 import {GET_EXERCISE_HISTORY} from "../graphql/queries/exerciseQueries.ts";
 import _ from 'lodash';
 import {retry} from "rxjs";
 import useWorkoutSession from "../hooks/useWorkoutSession.ts";
 import Modal from "../components/ui/Modal.tsx";
+import {TrashIcon} from "@heroicons/react/24/outline";
 const LOG_STATE = {
     LOGGING: 'LOGGING',
     REVIEW: 'REVIEW'
 }
-
+let nextTempSetId = 1
 export default function ExerciseLoggingPage() {
     const params = useParams();
     const navigate = useNavigate()
     const {sessionId, workoutExerciseId} = params
 
-    const { workoutSession, loading, error } = useWorkoutSession(sessionId, workoutExerciseId);
+    const key = `${sessionId}${workoutExerciseId}`
+    const { workoutSession, loading, error,refetch } = useWorkoutSession(sessionId, workoutExerciseId);
     // const [workoutSession, setWorkoutSession] = useState();
 
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -31,13 +36,58 @@ export default function ExerciseLoggingPage() {
     const [currentWorkoutData, setCurrentWorkoutData] = useState([]);
 
     const [historicalDataSet,setHistoricalDataSet] = useState([])
+    const [deleteState,setDeleteState] = useState(false)
 
+    const [selectedSet,setSelectedSet] = useState(null)
+
+    console.log(currentWorkoutData)
 
     const hasPopulated = useRef(false)
 
     const {data: historicalData,loading:historicalLoading, error:historicalError} = useQuery(GET_EXERCISE_HISTORY, {
         variables: {exerciseId: workoutSession?.workoutDaySession?.groupedWorkoutExercises[0].sets[0].exerciseId}
     })
+
+    const addSet = () => {
+        if (!currentWorkoutData.length) return;
+
+        const lastSet = currentWorkoutData[currentWorkoutData.length - 1];
+
+        const setData = JSON.parse(localStorage.getItem(key) || "{}");
+
+        const tempKeys = Object.keys(setData).filter(k => k.startsWith("temp-"));
+        const nextTempId =
+            tempKeys.length > 0
+                ? Math.max(...tempKeys.map(k => Number(k.slice(5)))) + 1
+                : 1;
+
+        const tempId = `temp-${nextTempId}`;
+        const order = currentWorkoutData.length + 1;
+
+        const newSet = {
+            id: tempId, // frontend identity only
+            completedReps: lastSet.completedReps,
+            completedWeight: lastSet.completedWeight,
+            order
+        };
+
+        // persist FIRST
+        setData[tempId] = {
+            completedReps: newSet.completedReps,
+            completedWeight: newSet.completedWeight,
+            order,
+        };
+        localStorage.setItem(key, JSON.stringify(setData));
+
+        // then update UI ONCE
+        setCurrentWorkoutData(prev => [...prev, newSet]);
+    };
+
+    const removeSet = () => {
+
+    }
+
+
 
 
 
@@ -47,15 +97,35 @@ export default function ExerciseLoggingPage() {
         console.log(currentWorkoutData)
 
         if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
-            const setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`) as string)
-            const result = currentWorkoutData.map(set => {
-                if(setData[set.id])
-                {
-                    return  {...set, completedReps: setData[set.id].completedReps, completedWeight: setData[set.id].completedWeight}
+            const baseSets = workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets;
+            const stored = JSON.parse(localStorage.getItem(key) || "{}");
+            let merged = [...baseSets];
+
+            // add temp sets
+            Object.entries(stored).forEach(([id, value]) => {
+                if (id.startsWith("temp-")) {
+                    merged.push({
+                        id,
+                        completedReps: value.completedReps,
+                        completedWeight: value.completedWeight,
+                        order: merged.length + 1
+                    });
                 }
-                return set
-            })
-            console.log(setData)
+            });
+
+            // apply overrides to persisted sets
+            merged = merged.map(set => {
+                if (stored[set.id]) {
+                    return {
+                        ...set,
+                        completedReps: stored[set.id].completedReps,
+                        completedWeight: stored[set.id].completedWeight
+                    };
+                }
+                return set;
+            });
+
+            const result = merged
             setCurrentWorkoutData(result)
             setCompletedReps(result[result.length-1].completedReps)
             setCompletedWeight(result[result.length-1].completedWeight)
@@ -68,9 +138,6 @@ export default function ExerciseLoggingPage() {
         }
         else{
             console.log( workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets)
-            // const firstSet =
-            //     workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets[0];
-            // setCurrentWorkoutData([firstSet]);
         }
     }, [currentWorkoutData]);
 
@@ -133,6 +200,15 @@ export default function ExerciseLoggingPage() {
     const [updateWorkoutSetSession] = useMutation(UPDATE_WORKOUT_SET_SESSIONS, {
         onCompleted: () =>{
             navigate(`/workout-sessions/${params.sessionId}`)
+        }
+    })
+
+    const [deleteWorkoutSetSession] = useMutation(DELETE_WORKOUT_SET_SESSIONS, {
+        onCompleted: () =>{
+            refetch()
+            setIsModalOpen(false)
+            setSelectedSet(null)
+           // Toast Message Here
         }
     })
 
@@ -201,16 +277,49 @@ export default function ExerciseLoggingPage() {
         }
     }
 
-    const lockInSetInfo = async () => {
-        const cleanedSet = currentWorkoutData.map((set,index) => {
-            // This removes unwanted properties and adds the 'order' field
-            const {__typename, exerciseId, ...rest} = set
-            return {
-                ...rest,
-                order: index+1
+    const deleteSet = async (id) => {
+        if(id.includes('temp'))
+        {
+            setCurrentWorkoutData(prev =>
+                prev
+                    .filter(set => set.id !== id)
+                    .map((set, index) => ({ ...set, order: index + 1 }))
+            );
+            setIsModalOpen(false)
+            setSelectedSet(null)
+
+            const setData = JSON.parse(localStorage.getItem(key) || "{}");
+            delete setData[id];
+            localStorage.setItem(key, JSON.stringify(setData));
+        }
+        else{
+            const variables = {id: id}
+            try{
+                const response = await deleteWorkoutSetSession({ variables });
+                console.log("Set Deleted!", response);
+                setSelectedSet(null)
+
             }
-        })
-        const variables = { sets: cleanedSet };
+            catch (error) {
+                console.error("Mutation error:", error);
+            }
+        }
+
+    }
+
+    const lockInSetInfo = async () => {
+        const cleanedSet = currentWorkoutData.map((set, index) => {
+            // This removes unwanted properties and adds the 'order' field
+            const { __typename, exerciseId, id, ...rest } = set;
+
+            const isTemp = typeof id === "string" && id.startsWith("temp-");
+
+            return {
+                ...(isTemp ? rest : { ...rest, id }),
+                order: index + 1,
+            };
+        });
+        const variables = { sets: cleanedSet, workoutExerciseId: workoutExerciseId };
         try {
             const response = await updateWorkoutSetSession({ variables });
             console.log("Updated!", response);
@@ -234,8 +343,6 @@ export default function ExerciseLoggingPage() {
             }
             setData[updated[index].id] = {completedReps: updated[index].completedReps, completedWeight: updated[index].completedWeight}
             localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
-
-            // console.log(setData)
             return updated;
         });
     };
@@ -253,6 +360,76 @@ export default function ExerciseLoggingPage() {
     }
 
 
+    const unsavedChangesContent = (
+        <div className="flex flex-col gap-4">
+            <span className="text-gray-700 text-sm">
+                You have unsaved changes. Do you want to revert them or save?
+            </span>
+
+            {/* Buttons Container */}
+            <div className="flex flex-col gap-3">
+                {/* Revert Changes Button */}
+                <button
+                    className="bg-gray-100 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
+                    onClick={revertChanges}
+                >
+                    Revert Changes
+                </button>
+
+                {/* Save Changes Button */}
+                <button
+                    type="button"
+                    disabled={loading}
+                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
+                    onClick={lockInSetInfo}
+                >
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    )
+
+
+    const deleteSetContent = (
+        <div className="flex flex-col gap-4">
+            <span className="text-gray-700 text-sm">
+                Are you sure you want to delete this set? This cannot be undone.
+            </span>
+
+            {/* Buttons Container */}
+            <div className="flex flex-col gap-3">
+                {/* Revert Changes Button */}
+                <button
+                    className="bg-gray-100 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
+                    onClick={()=> setIsModalOpen(false)}
+                >
+                    Cancel
+                </button>
+
+                {/* Save Changes Button */}
+                <button
+                    type="button"
+                    disabled={loading}
+                    className="text-white bg-red-500 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-danger-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
+                    onClick={()=> deleteSet(selectedSet)}
+                >
+                   Delete
+                </button>
+            </div>
+        </div>
+    )
+    const modalContent = [
+        {
+            title: "Unsaved Changes",
+            content: unsavedChangesContent
+        },
+
+        {
+            title: "Delete Set",
+            content: deleteSetContent
+        },
+    ]
+
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error loading workout session</div>;
@@ -261,7 +438,7 @@ export default function ExerciseLoggingPage() {
     if (!exercise) return <div>No exercise found.</div>;
 
     const { exerciseName, sets } = exercise;
-    const totalSets = sets.length;
+    const totalSets = currentWorkoutData.length;
 
     const buttonLabel =
         currentSetIndex >= totalSets - 1 ? "Review All Sets" : "Complete Set";
@@ -269,7 +446,6 @@ export default function ExerciseLoggingPage() {
     let hasUnsavedChanges = false;
 
     const hasBeenSavedBefore = sets.map(x => x.completedReps !== null && x.completedWeight !== null ).some(val => val)
-    console.log(hasBeenSavedBefore)
     if(logState === LOG_STATE.REVIEW && hasBeenSavedBefore)
     {
             if(!_.isEqual(sets, currentWorkoutData))
@@ -438,7 +614,9 @@ export default function ExerciseLoggingPage() {
                 >
                     <span>✓</span> {buttonLabel}
                 </button>
+
             </div>
+
 
                 </div>
             }
@@ -487,27 +665,44 @@ export default function ExerciseLoggingPage() {
                                     </div>
                                 </div>
 
-                                {/* Delete Button */}
-                                {/*<button*/}
-                                {/*    onClick={() => removeSet(idx)}*/}
-                                {/*    className="text-red-500 hover:text-red-700 mt-2"*/}
-                                {/*>*/}
-                                {/*    🗑*/}
-                                {/*</button>*/}
+                                <div className="flex flex-col justify-end">
+                                    {/* Spacer to match label height */}
+                                    <div className="h-5 mb-1" />
+
+                                    <button
+                                        onClick={() => {
+                                            setIsModalOpen(true);
+                                            setDeleteState(true);
+                                            setSelectedSet(set.id);
+                                        }}
+                                        className="
+      flex items-center justify-center
+      w-13 h-13
+      rounded-full
+      text-gray-400
+      hover:text-red-600
+      hover:bg-red-50
+      transition
+    "
+                                        aria-label="Delete set"
+                                    >
+                                        <TrashIcon className="w-20 h-20" />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
 
                     {/* ADD SET BUTTON */}
-    {/*                <button*/}
-    {/*                    onClick={addSet}*/}
-    {/*                    className="*/}
-    {/*  w-full py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-xl*/}
-    {/*  hover:bg-gray-50 transition*/}
-    {/*"*/}
-    {/*                >*/}
-    {/*                    + Add Set*/}
-    {/*                </button>*/}
+                    <button
+                        onClick={addSet}
+                        className="
+      w-full py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-xl
+      hover:bg-gray-50 transition
+    "
+                    >
+                        + Add Set
+                    </button>
 
                     {/* SAVE EXERCISE CTA */}
                     <button
@@ -524,33 +719,13 @@ export default function ExerciseLoggingPage() {
             }
 
             {isModalOpen && (
-                <Modal onClose={() => setIsModalOpen(false)} title={'Unsaved Changes'}>
-                    <div className="flex flex-col gap-4">
-            <span className="text-gray-700 text-sm">
-                You have unsaved changes. Do you want to revert them or save?
-            </span>
+                <Modal onClose={() => {
+                    setIsModalOpen(false)
+                    setDeleteState(false)
+                }} title={hasUnsavedChanges ? modalContent[0].title : modalContent[1].title}>
+                    {hasUnsavedChanges && !deleteState && modalContent[0].content}
+                    {deleteState && modalContent[1].content}
 
-                        {/* Buttons Container */}
-                        <div className="flex flex-col gap-3">
-                            {/* Revert Changes Button */}
-                            <button
-                                className="bg-gray-100 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
-                                onClick={revertChanges}
-                            >
-                                Revert Changes
-                            </button>
-
-                            {/* Save Changes Button */}
-                            <button
-                                type="button"
-                                disabled={loading}
-                                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
-                                onClick={lockInSetInfo}
-                            >
-                                Save Changes
-                            </button>
-                        </div>
-                    </div>
                 </Modal>
             )}
         </div>

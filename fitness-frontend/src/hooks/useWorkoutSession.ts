@@ -3,7 +3,7 @@ import {GET_WORKOUT_SESSION} from "../graphql/queries/workoutSessionQueries.ts";
 import {useEffect, useState} from "react";
 
 export default function useWorkoutSession (sessionId,workoutExerciseId) {
-    const { data, loading, error } = useQuery(GET_WORKOUT_SESSION, {
+    const { data, loading, error,refetch } = useQuery(GET_WORKOUT_SESSION, {
         variables: { id: sessionId, workoutExerciseId: workoutExerciseId },
     });
 
@@ -13,5 +13,5 @@ export default function useWorkoutSession (sessionId,workoutExerciseId) {
         if (data) setWorkoutSession(data.workoutSession);
     }, [data]);
 
-    return {workoutSession, loading, error}
+    return {workoutSession, loading, error,refetch}
 }

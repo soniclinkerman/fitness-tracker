@@ -31,5 +31,8 @@ module Types
     field :update_active_program, mutation: Mutations::Programs::UpdateActiveProgram
     field :start_quick_workout_session, mutation: Mutations::WorkoutSessions::StartQuickWorkoutSession
     field :add_exercise_to_workout_session, mutation: Mutations::WorkoutSessions::AddExerciseToWorkoutSession
+
+    field :delete_workout_set_session, mutation: Mutations::WorkoutSetSessions::DeleteWorkoutSetSession
+    field :delete_exercise_from_workout_session, mutation: Mutations::WorkoutSessions::DeleteExerciseFromWorkoutSession
   end
 end

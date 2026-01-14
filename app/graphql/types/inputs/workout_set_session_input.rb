@@ -1,7 +1,7 @@
 module Types
   module Inputs
     class WorkoutSetSessionInput < Types::BaseInputObject
-      argument :id, ID, required: true
+      argument :id, ID, required: false
       argument :completed_reps, Int, required: true
       argument :completed_weight, Float, required: false
       argument :notes, String, required: false
