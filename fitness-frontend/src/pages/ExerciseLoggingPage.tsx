@@ -1,6 +1,5 @@
 import BackButton from "../components/BackButton.tsx";
 import {useEffect, useRef, useState} from "react";
-import { GET_WORKOUT_SESSION } from "../graphql/queries/workoutSessionQueries.ts";
 import {useMutation, useQuery} from "@apollo/client/react";
 import {useNavigate, useParams} from "react-router-dom";
 import {
@@ -9,7 +8,6 @@ import {
 } from "../graphql/mutations/workoutSetSessionMutations.ts";
 import {GET_EXERCISE_HISTORY} from "../graphql/queries/exerciseQueries.ts";
 import _ from 'lodash';
-import {retry} from "rxjs";
 import useWorkoutSession from "../hooks/useWorkoutSession.ts";
 import Modal from "../components/ui/Modal.tsx";
 import {TrashIcon} from "@heroicons/react/24/outline";
@@ -17,7 +15,6 @@ const LOG_STATE = {
     LOGGING: 'LOGGING',
     REVIEW: 'REVIEW'
 }
-let nextTempSetId = 1
 export default function ExerciseLoggingPage() {
     const params = useParams();
     const navigate = useNavigate()
@@ -25,7 +22,6 @@ export default function ExerciseLoggingPage() {
 
     const key = `${sessionId}${workoutExerciseId}`
     const { workoutSession, loading, error,refetch } = useWorkoutSession(sessionId, workoutExerciseId);
-    // const [workoutSession, setWorkoutSession] = useState();
 
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [logState, setLogState] = useState(LOG_STATE.LOGGING)
@@ -40,10 +36,6 @@ export default function ExerciseLoggingPage() {
 
     const [selectedSet,setSelectedSet] = useState(null)
 
-    console.log(currentWorkoutData)
-
-    const hasPopulated = useRef(false)
-
     const {data: historicalData,loading:historicalLoading, error:historicalError} = useQuery(GET_EXERCISE_HISTORY, {
         variables: {exerciseId: workoutSession?.workoutDaySession?.groupedWorkoutExercises[0].sets[0].exerciseId}
     })
@@ -52,6 +44,7 @@ export default function ExerciseLoggingPage() {
         if (!currentWorkoutData.length) return;
 
         const lastSet = currentWorkoutData[currentWorkoutData.length - 1];
+        if(lastSet.committed) lastSet.committed=true
 
         const setData = JSON.parse(localStorage.getItem(key) || "{}");
 
@@ -75,6 +68,7 @@ export default function ExerciseLoggingPage() {
         setData[tempId] = {
             completedReps: newSet.completedReps,
             completedWeight: newSet.completedWeight,
+            committed:false,
             order,
         };
         localStorage.setItem(key, JSON.stringify(setData));
@@ -83,23 +77,27 @@ export default function ExerciseLoggingPage() {
         setCurrentWorkoutData(prev => [...prev, newSet]);
     };
 
-    const removeSet = () => {
-
-    }
-
-
-
-
-
 
     useEffect(() => {
-        if(currentWorkoutData.length < 1 || hasPopulated.current) return
-        console.log(currentWorkoutData)
+        if (!workoutSession || !workoutExerciseId) return;
 
         if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
+            // build base sets
             const baseSets = workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets;
             const stored = JSON.parse(localStorage.getItem(key) || "{}");
-            let merged = [...baseSets];
+
+            const results = baseSets.map((set) => {
+                const storageData = stored[set.id]
+                if (storageData) {
+                    const completedWeight = storageData.completedWeight
+                    const completedReps = storageData.completedReps
+                    return {...set, completedWeight: completedWeight, completedReps: completedReps}
+                    // finalSets.push(result)
+                }
+                return set
+            })
+            // merge localStorage
+            let merged = [...results];
 
             // add temp sets
             Object.entries(stored).forEach(([id, value]) => {
@@ -112,41 +110,32 @@ export default function ExerciseLoggingPage() {
                     });
                 }
             });
-
-            // apply overrides to persisted sets
-            merged = merged.map(set => {
-                if (stored[set.id]) {
-                    return {
-                        ...set,
-                        completedReps: stored[set.id].completedReps,
-                        completedWeight: stored[set.id].completedWeight
-                    };
-                }
-                return set;
-            });
-
-            const result = merged
-            setCurrentWorkoutData(result)
-            setCompletedReps(result[result.length-1].completedReps)
-            setCompletedWeight(result[result.length-1].completedWeight)
-            setCurrentSetIndex(result.length-1)
-            hasPopulated.current=true
-            if(result.length === workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets.length)
+            const setSize =  Object.keys(stored).length
+            if(setSize)
             {
-                setLogState(LOG_STATE.REVIEW)
+                setCompletedWeight(merged[setSize-1].completedWeight)
+                setCompletedReps(merged[setSize-1].completedReps)
             }
+
+            // compute index
+            const lastCompletedIndex = Object.values(stored).reduce((last, set, idx) => {
+                if (set.committed === true) {
+                    return idx;
+                }
+                return last;
+            }, -1);
+
+            const nextIndex = Math.min(lastCompletedIndex + 1, merged.length - 1);
+
+            setCurrentSetIndex(nextIndex)
+            setCurrentWorkoutData(merged)
         }
         else{
-            console.log( workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets)
+            const sets = workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets
+            setCurrentWorkoutData(sets)
         }
-    }, [currentWorkoutData]);
 
-
-    // This runs when we have saved data. Normally happens when we've completed a workout
-    // useEffect(() => {
-    //     if (data) setWorkoutSession(data.workoutSession);
-    // }, [data]);
-
+    }, [workoutSession?.id,workoutExerciseId])
 
     // This runs in the event we have previous from a users lift in the last session.
     // This can allow them to see what they did last week without needing to switch to the progress page
@@ -158,37 +147,17 @@ export default function ExerciseLoggingPage() {
         }
     }, [historicalData])
 
-
     useEffect(() => {
-        if (workoutSession) {
-            const hasFinished = workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets.map(x => x.completedReps > 0).every(val => val)
-            if(hasFinished)
-            {
-                handleReviewState()
-            }
-            else {
-                const firstSet =
-                    workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets[0];
+        if (!currentWorkoutData.length) return;
 
-                const sets = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`))
-                const finalSets = []
-                if(sets) {
-                    workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets.forEach((set) => {
-                        const storageData = sets[set.id]
-                        if (storageData) {
-                            const completedWeight = storageData.completedWeight
-                            const completedReps = storageData.completedReps
-                            const result = {...set, completedWeight: completedWeight, completedReps: completedReps}
-                            finalSets.push(result)
-                        }
-                    })
-                }
+        const allCommitted = currentWorkoutData.every(
+            set => set.completedReps !== null
+        );
 
-                const currentSetList = finalSets.length > 0 ? finalSets : [firstSet];
-                setCurrentWorkoutData(currentSetList);
-            }
+        if (allCommitted) {
+            setLogState(LOG_STATE.REVIEW);
         }
-    }, [workoutSession]);
+    }, [currentWorkoutData]);
 
     const handleReviewState = () =>
     {
@@ -204,10 +173,14 @@ export default function ExerciseLoggingPage() {
     })
 
     const [deleteWorkoutSetSession] = useMutation(DELETE_WORKOUT_SET_SESSIONS, {
-        onCompleted: () =>{
+        onCompleted: (data) =>{
+            const {deleteWorkoutSetSession} = data
+            const {workoutSets} = deleteWorkoutSetSession
             refetch()
             setIsModalOpen(false)
             setSelectedSet(null)
+            setCurrentWorkoutData(workoutSets)
+
            // Toast Message Here
         }
     })
@@ -225,19 +198,17 @@ export default function ExerciseLoggingPage() {
         const nextIndex = currentSetIndex + 1;
         const nextSet = sets[nextIndex];
 
-        console.log(completedWeight)
+
+        // Should likely put this in it's own method
         const setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`))
         if(setData)
         {
-            setData[nextSet.id] = {completedReps: completedReps, completedWeight: completedWeight}
+            setData[nextSet.id] = {completedReps: completedReps, completedWeight: completedWeight,committed:false}
             localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
         }
 
-
-
-        // console.log(storageSet)
         setCurrentSetIndex(nextIndex);
-        setCurrentWorkoutData((prev) => [...prev, nextSet]);
+        // setCurrentWorkoutData((prev) => [...prev, nextSet]);
     };
 
     const updateCurrentSet = () => {
@@ -254,13 +225,15 @@ export default function ExerciseLoggingPage() {
             if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
                 setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`) as string)
             }
-            setData[updated[currentSetIndex].id] = {completedReps: updated[currentSetIndex].completedReps, completedWeight: updated[currentSetIndex].completedWeight}
+            setData[updated[currentSetIndex].id] = {
+                completedReps: updated[currentSetIndex].completedReps,
+                completedWeight: updated[currentSetIndex].completedWeight,
+                committed: true
+            }
             localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
 
             return updated
         })
-        // setCompletedWeight(0)
-        // setCompletedReps(0)
     }
 
     const handleNextSet = () => {
@@ -298,6 +271,9 @@ export default function ExerciseLoggingPage() {
                 const response = await deleteWorkoutSetSession({ variables });
                 console.log("Set Deleted!", response);
                 setSelectedSet(null)
+                const setData = JSON.parse(localStorage.getItem(key) || "{}");
+                delete setData[id];
+                localStorage.setItem(key, JSON.stringify(setData));
 
             }
             catch (error) {
@@ -310,7 +286,7 @@ export default function ExerciseLoggingPage() {
     const lockInSetInfo = async () => {
         const cleanedSet = currentWorkoutData.map((set, index) => {
             // This removes unwanted properties and adds the 'order' field
-            const { __typename, exerciseId, id, ...rest } = set;
+            const { __typename, exerciseId, id,committed, ...rest } = set;
 
             const isTemp = typeof id === "string" && id.startsWith("temp-");
 
@@ -341,7 +317,12 @@ export default function ExerciseLoggingPage() {
             if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
                 setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`) as string)
             }
-            setData[updated[index].id] = {completedReps: updated[index].completedReps, completedWeight: updated[index].completedWeight}
+            const previous = setData[updated[index].id] || {};
+
+            setData[updated[index].id] = {
+                ...previous,
+                completedReps: updated[index].completedReps, completedWeight: updated[index].completedWeight
+            };
             localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
             return updated;
         });
@@ -438,8 +419,7 @@ export default function ExerciseLoggingPage() {
     if (!exercise) return <div>No exercise found.</div>;
 
     const { exerciseName, sets } = exercise;
-    const totalSets = currentWorkoutData.length;
-
+    const totalSets = workoutSession.workoutDaySession.groupedWorkoutExercises[0].sets.length;
     const buttonLabel =
         currentSetIndex >= totalSets - 1 ? "Review All Sets" : "Complete Set";
 
@@ -448,10 +428,45 @@ export default function ExerciseLoggingPage() {
     const hasBeenSavedBefore = sets.map(x => x.completedReps !== null && x.completedWeight !== null ).some(val => val)
     if(logState === LOG_STATE.REVIEW && hasBeenSavedBefore)
     {
-            if(!_.isEqual(sets, currentWorkoutData))
-            {
-                hasUnsavedChanges=true
+        const diffSets = (a, b) => {
+            const max = Math.max(a.length, b.length);
+            const diffs = [];
+
+            for (let i = 0; i < max; i++) {
+                if (!_.isEqual(a[i], b[i])) {
+                    diffs.push({
+                        index: i,
+                        left: a[i],
+                        right: b[i],
+                        fieldDiffs: _.reduce(a[i], (acc, val, key) => {
+                            if (!_.isEqual(val, b[i]?.[key])) {
+                                acc[key] = { left: val, right: b[i]?.[key] };
+                            }
+                            return acc;
+                        }, {})
+                    });
+                }
             }
+
+            return diffs;
+        };
+
+        console.log(diffSets(sets, currentWorkoutData));
+
+        const normalizeForSaveCheck = (sets) =>
+            sets.map(set => ({
+                id: String(set.id),
+                completedReps: set.completedReps ?? null,
+                completedWeight: set.completedWeight ?? null,
+                order: set.order,
+            }));
+
+         hasUnsavedChanges =
+            !_.isEqual(
+                normalizeForSaveCheck(sets),
+                normalizeForSaveCheck(currentWorkoutData)
+            );
+         console.log("has Unsaved Changes: ", hasUnsavedChanges)
     }
 
     const handleBack = () => {
@@ -495,7 +510,7 @@ export default function ExerciseLoggingPage() {
             <h2 className="text-lg font-semibold mt-6 mb-3">Log Your Sets</h2>
 
             {/* COMPLETED SETS */}
-            {currentWorkoutData.slice(0, -1).map((set, i) => (
+            {currentWorkoutData.slice(0, currentSetIndex).map((set, i) => (
                 <div
                     key={i}
                     className="
@@ -574,7 +589,13 @@ export default function ExerciseLoggingPage() {
                                 if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
                                     setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`) as string)
                                 }
-                                setData[currentSet.id] = {completedReps: Number(e.target.value), completedWeight: completedWeight}
+                                const prev = setData[currentSet.id] || {};
+
+                                setData[currentSet.id] = {
+                                    ...prev,
+                                    completedReps: Number(e.target.value),
+                                    completedWeight,
+                                };
                                 localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
                                 console.log(setData)
                             }
@@ -596,7 +617,13 @@ export default function ExerciseLoggingPage() {
                                 if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
                                     setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`) as string)
                                 }
-                                setData[currentSet.id] = {completedReps: completedReps, completedWeight: Number(e.target.value)}
+                                const prev = setData[currentSet.id] || {};
+
+                                setData[currentSet.id] = {
+                                    ...prev,
+                                    completedReps,
+                                    completedWeight:Number(e.target.value),
+                                };
                                 localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
                             }}
                         />

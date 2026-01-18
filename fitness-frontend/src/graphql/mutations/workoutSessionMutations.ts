@@ -117,3 +117,11 @@ mutation DeleteExerciseFromWorkoutSession($id: ID!) {
   }
 }
 `
+
+export const DELETE_WORKOUT_SESSION = gql`
+mutation DeleteWorkoutSession {
+  deleteWorkoutSession(input: {}) {
+    message
+  }
+}
+    `

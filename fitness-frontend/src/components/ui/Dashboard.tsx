@@ -5,13 +5,20 @@ import NoActiveProgram from "./NoActiveProgram.js";
 import {useNavigate} from "react-router-dom";
 import NextWorkoutCard from "./NextWorkoutCard.tsx";
 import {useMutation, useQuery} from "@apollo/client/react";
-import {START_QUICK_WORKOUT_SESSION, START_WORKOUT_SESSION} from "../../graphql/mutations/workoutSessionMutations.ts";
+import {
+    DELETE_WORKOUT_SESSION,
+    START_QUICK_WORKOUT_SESSION,
+    START_WORKOUT_SESSION
+} from "../../graphql/mutations/workoutSessionMutations.ts";
 import {GET_ACTIVE_WORKOUT_SESSION} from "../../graphql/queries/workoutSessionQueries.ts";
 import {useEffect, useState} from "react";
 import ActiveWorkoutSessionCard from "./ActiveWorkoutSessionCard.tsx";
+import Modal from "./Modal.tsx";
+import {GET_ACTIVE_PROGRAM, GET_PROGRAM} from "../../graphql/queries/programQueries.ts";
 
 
 export default function Dashboard({ activeProgram, totalWorkouts, currentWeek }) {
+    const [modalMode,setModalMode] = useState<'CREATE'| 'UPDATE'| 'DELETE' | null>(null)
     const navigate = useNavigate()
     const [workoutSession, setWorkoutSession] = useState()
     const { data, loading } = useQuery(GET_ACTIVE_WORKOUT_SESSION);
@@ -36,9 +43,26 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
         }
     })
 
+    const [deleteWorkoutSession] = useMutation(DELETE_WORKOUT_SESSION, {
+        onCompleted: () => {
+            setModalMode(null)
+        },
+        refetchQueries: [
+            { query: GET_ACTIVE_PROGRAM },
+        ] as Parameters<typeof useMutation>[1]["refetchQueries"],
+    })
+
     const startWorkout = async () => {
         try {
             await startWorkoutSession()
+        } catch (err) {
+            console.error("Failed to delete:", err);
+        }
+    }
+
+    const discardWorkoutSession = async () => {
+        try {
+            await deleteWorkoutSession()
         } catch (err) {
             console.error("Failed to delete:", err);
         }
@@ -49,6 +73,17 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
         const id = workoutSession.id
         navigate(`/workout-sessions/${id}`)
     }
+
+    const deleteModalContent = (
+        <div>
+            <h2>
+                Are you sure you want to discard this workout session? This can not be undone.
+            </h2>
+            <button onClick={discardWorkoutSession}>Delete
+            </button>
+            <button onClick={()=> setModalMode(null)}>Cancel</button>
+        </div>
+    )
 
     // Handle sorting in the frontend.
     const sortedDays = activeProgram ? [...activeProgram.workoutDays].sort((a, b) => a.dayNumber - b.dayNumber) : null
@@ -82,7 +117,7 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
                 <h2 className="text-lg font-semibold mb-3">In Progress</h2>
             </div>
 
-            <ActiveWorkoutSessionCard workoutSession={workoutSession} onClick={resumeWorkout}/>
+            <ActiveWorkoutSessionCard workoutSession={workoutSession} onClick={resumeWorkout} onDiscard={()=> setModalMode('DELETE')}/>
         </>
     )
 
@@ -174,6 +209,16 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
 
                 </div>
             )}
+
+
+            {modalMode === 'DELETE' &&
+                <Modal onClose={() => {
+                    setModalMode(null)
+                }} title={"Discard Workout Session"}>
+                    {deleteModalContent}
+                </Modal>
+            }
+
         </div>
     );
 }

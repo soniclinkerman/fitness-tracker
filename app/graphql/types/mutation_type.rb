@@ -34,5 +34,6 @@ module Types
 
     field :delete_workout_set_session, mutation: Mutations::WorkoutSetSessions::DeleteWorkoutSetSession
     field :delete_exercise_from_workout_session, mutation: Mutations::WorkoutSessions::DeleteExerciseFromWorkoutSession
+    field :delete_workout_session, mutation: Mutations::WorkoutSessions::DeleteWorkoutSession
   end
 end
