@@ -1,3 +1,3 @@
-We class ExerciseLog < ApplicationRecord
+class ExerciseLog < ApplicationRecord
   belongs_to :workout_exercise
 end
