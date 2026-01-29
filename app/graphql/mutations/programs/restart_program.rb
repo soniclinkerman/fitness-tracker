@@ -3,7 +3,7 @@ module Mutations
     class RestartProgram < BaseMutation
       argument :id, ID, required:true
 
-      field :program, Types::Program
+      field :program, Types::ProgramType
 
       def resolve(**args)
         id = args[:id]
