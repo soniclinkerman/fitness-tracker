@@ -1,51 +1,91 @@
-WorkoutSetSession.destroy_all
-WorkoutDaySession.destroy_all
-WorkoutSession.destroy_all
-Program.where(description: 'Example 3-day split').destroy_all
-User.destroy_all
-# --- USERS ---
-user = User.create!(name: "Test User", email: "test@example.com")
+# ============================================
+# Exercise Library
+# ============================================
+# Run with: rails db:seed
+# Safe to re-run — uses find_or_create_by on name
 
-# --- STATIC STRUCTURE ---
-program = Program.create!(name: "Push/Pull/Legs", description: "Example 3-day split", user: user, days_per_week: 3)
+exercises = [
+  # Chest
+  { name: "Barbell Bench Press", category: :chest },
+  { name: "Dumbell Bench Press", category: :chest, default_sets: 4, default_reps_min: 10, default_reps_max: 12, description: "An exercise that prioritizes the chest" },
+  { name: "Incline Dumbell Bench Press", category: :chest, default_sets: 4, default_reps_min: 8, default_reps_max: 10 },
+  { name: "Incline Bench Press", category: :chest },
+  { name: "Dumbbell Fly", category: :chest, default_sets: 3, default_reps_min: 10, default_reps_max: 12 },
+  { name: "Cable Crossover", category: :chest, default_sets: 3, default_reps_min: 10, default_reps_max: 15 },
+  { name: "Chest Dip", category: :chest, default_sets: 3, default_reps_min: 8, default_reps_max: 12 },
 
-exercise = Exercise.first
+  # Back
+  { name: "Pull Ups", category: :back, default_sets: 3, default_reps_min: 10, default_reps_max: 12 },
+  { name: "T-Bar", category: :back, default_sets: 3, default_reps_min: 8 },
+  { name: "Cable Row", category: :back },
+  { name: "Pull Down", category: :back },
+  { name: "Barbell Row", category: :back, default_sets: 4, default_reps_min: 8, default_reps_max: 12 },
+  { name: "Seated Cable Row", category: :back, default_sets: 3, default_reps_min: 10, default_reps_max: 12 },
+  { name: "Face Pull", category: :back, default_sets: 3, default_reps_min: 12, default_reps_max: 15 },
 
-workout_day = program.workout_days.create!(
-  name: "Push Day",
-  day_number: 1
-)
+  # Shoulders
+  { name: "Shoulder Press", category: :shoulders, default_sets: 3, default_reps_min: 8, default_reps_max: 12 },
+  { name: "Military Press", category: :shoulders, default_sets: 4 },
+  { name: "Machine Lateral Raises", category: :shoulders },
+  { name: "Lateral Raises (Machine)", category: :shoulders },
+  { name: "Lateral Raises (Free Weights)", category: :shoulders },
+  { name: "Rear Delt Fly (Dumbbell)", category: :shoulders },
+  { name: "Shoulder Raises", category: :shoulders },
 
-workout_exercise = workout_day.workout_exercises.create!(
-  exercise: exercise,
-  workout_day: workout_day
-)
+  # Biceps
+  { name: "Bicep Curl", category: :biceps, default_sets: 3, default_reps_min: 10 },
+  { name: "Bicep Curls (Free Weight)", category: :biceps },
+  { name: "Hammer Curl", category: :biceps, default_sets: 3, default_reps_min: 10, default_reps_max: 12 },
+  { name: "Preacher Curl", category: :biceps, default_sets: 3, default_reps_min: 8, default_reps_max: 12 },
+  { name: "Concentration Curl", category: :biceps, default_sets: 3, default_reps_min: 10, default_reps_max: 12 },
 
-# --- DYNAMIC STRUCTURE ---
-workout_session = WorkoutSession.create!(
-  user: user,
-  program: program,
-  started_at: Time.current,
-  notes: "First push workout!"
-)
+  # Triceps
+  { name: "Tricep Pushdown", category: :triceps, default_sets: 3, default_reps_min: 10, default_reps_max: 15 },
+  { name: "Overhead Tricep Extension", category: :triceps, default_sets: 3, default_reps_min: 10, default_reps_max: 12 },
+  { name: "Skull Crushers", category: :triceps, default_sets: 3, default_reps_min: 8, default_reps_max: 12 },
+  { name: "Dips", category: :triceps, default_sets: 3, default_reps_min: 8, default_reps_max: 12 },
+  { name: "Close Grip Bench Press", category: :triceps, default_sets: 3, default_reps_min: 8, default_reps_max: 10 },
 
-workout_day_session = workout_session.workout_day_sessions.create!(
-  workout_day: workout_day,
-  position: 1,
-  notes: "Felt good today"
-)
+  # Legs
+  { name: "Squats", category: :legs, default_sets: 4 },
+  { name: "Leg Press", category: :legs, default_sets: 3 },
+  { name: "Hamstring Curl", category: :legs, default_sets: 3 },
+  { name: "Bulgarian Split Squat", category: :legs },
+  { name: "RDL", category: :legs, description: "Make sure to hinge. Pause at the bottom 5 seconds" },
+  { name: "Leg Extension", category: :legs, default_sets: 3, default_reps_min: 10, default_reps_max: 15 },
+  { name: "Calf Raises", category: :legs, default_sets: 4, default_reps_min: 12, default_reps_max: 20 },
+  { name: "Lunges", category: :legs, default_sets: 3, default_reps_min: 10, default_reps_max: 12 },
+  { name: "Seated Leg Curl", category: :legs, default_sets: 3, default_reps_min: 10, default_reps_max: 12 },
 
-# --- LOG SOME SETS ---
-3.times do |i|
-  WorkoutSetSession.create!(
-    user: user,
-    exercise: exercise,           # or Exercise.find_by(name: "Bench Press") if you store separately
-    workout_day_session: workout_day_session,
-    completed_weight: 185,
-    completed_reps: [8, 9, 10][i],
-    is_failure: false,
-    rpe: 8 + (i * 0.5)
-  )
+  # Glutes
+  { name: "Hip Thrust", category: :glutes, default_sets: 4, default_reps_min: 8, default_reps_max: 12 },
+  { name: "Glute Bridge", category: :glutes, default_sets: 3, default_reps_min: 10, default_reps_max: 15 },
+  { name: "Cable Kickback", category: :glutes, default_sets: 3, default_reps_min: 12, default_reps_max: 15 },
+
+  # Abs
+  { name: "Plank", category: :abs, description: "Hold for time rather than reps" },
+  { name: "Hanging Leg Raise", category: :abs, default_sets: 3, default_reps_min: 10, default_reps_max: 15 },
+  { name: "Cable Crunch", category: :abs, default_sets: 3, default_reps_min: 12, default_reps_max: 20 },
+  { name: "Ab Rollout", category: :abs, default_sets: 3, default_reps_min: 8, default_reps_max: 12 },
+
+  # Full Body
+  { name: "Deadlift", category: :full_body },
+
+  # Cardio
+  { name: "Treadmill", category: :cardio, description: "Log duration in reps field (minutes)" },
+  { name: "Stairmaster", category: :cardio, description: "Log duration in reps field (minutes)" },
+  { name: "Rowing Machine", category: :cardio, description: "Log duration in reps field (minutes)" },
+  { name: "Cycling", category: :cardio, description: "Log duration in reps field (minutes)" },
+]
+
+exercises.each do |attrs|
+  Exercise.find_or_create_by!(name: attrs[:name]) do |exercise|
+    exercise.category = attrs[:category]
+    exercise.default_sets = attrs[:default_sets]
+    exercise.default_reps_min = attrs[:default_reps_min]
+    exercise.default_reps_max = attrs[:default_reps_max]
+    exercise.description = attrs[:description]
+  end
 end
 
-puts "✅ Seeded: #{User.count} user, #{Program.count} program, #{WorkoutSession.count} session, #{WorkoutSetSession.count} sets"
+puts "✅ Seeded #{Exercise.count} exercises"
