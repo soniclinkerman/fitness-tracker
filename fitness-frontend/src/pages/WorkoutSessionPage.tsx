@@ -109,6 +109,7 @@ export default function WorkoutSessionPage() {
 
                     <input
                         type="text"
+                        data-cy={"search-exercise-input"}
                         placeholder={"Search Exercises..."}
                         value={searchTerm}
                         onFocus={handleFocus}
@@ -147,6 +148,7 @@ export default function WorkoutSessionPage() {
                                     type="button"
                                     onClick={() => setModalMode('CREATE_EXERCISE')}
                                     className="w-full px-4 py-2 text-sm font-semibold text-teal-700 bg-white hover:bg-teal-50 transition-colors rounded-b-lg"
+                                    data-cy="create-new-exercise-btn"
                                 >
                                     + Create new exercise
                                 </button>
@@ -158,6 +160,7 @@ export default function WorkoutSessionPage() {
 
                 { selectedExerciseId &&
                 <input
+                    data-cy={"set-count-input"}
                     type="text"
                     placeholder={"Set Count"}
                     value={setCount}
@@ -170,14 +173,18 @@ export default function WorkoutSessionPage() {
             {/* Buttons */}
             <div className="flex justify-end gap-2 pt-3">
                 <button
+
                     type="button"
                     onClick={resetInput}
                     className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                    data-cy="add-exercise-cancel-btn"
                 >
                     Cancel
                 </button>
                 <button
                     disabled={!isValidExercise}
+                    data-cy={"add-exercise-btn"}
+
 
                     className={`text-white px-5 py-2.5 rounded-lg ${
                         isValidExercise ? "bg-blue-700 hover:bg-blue-800" : "bg-gray-400 cursor-not-allowed" 
@@ -202,9 +209,9 @@ export default function WorkoutSessionPage() {
                 } catch (err) {
                     console.error("Failed to delete:", err);
                 }
-            }}>Delete
+            }} data-cy="session-delete-exercise-confirm-btn">Delete
             </button>
-            <button onClick={resetInput}>Cancel</button>
+            <button onClick={resetInput} data-cy="session-delete-exercise-cancel-btn">Cancel</button>
         </div>
     )
 
@@ -222,7 +229,6 @@ export default function WorkoutSessionPage() {
     const [completeWorkoutSession] = useMutation(COMPLETE_WORKOUT_SESSION, {
         onCompleted: () => {
             Promise.resolve().then(() => navigate("/"));
-            const sets = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`))
         },
         refetchQueries: [
             { query: GET_ACTIVE_WORKOUT_SESSION },
@@ -283,6 +289,7 @@ export default function WorkoutSessionPage() {
                             onClick={() =>
                                 navigate(`exercise/${exercise.workoutExerciseId}`)
                             }
+                            data-cy={`${exerciseName}${exercise.workoutExerciseId}`}
                             key={exercise.workoutExerciseId}
                             className={`
                                 w-full text-left
@@ -373,6 +380,7 @@ export default function WorkoutSessionPage() {
             transition
         "
                                         aria-label="Delete exercise"
+                                        data-cy="session-exercise-delete-btn"
                                     >
                                         🗑
                                     </button>
@@ -385,11 +393,12 @@ export default function WorkoutSessionPage() {
                     );
                 })}
 
-                <button onClick={()=> setModalMode('CREATE')}>Add Exercise</button>
+                <button  data-cy={"add-exercise-btn"} onClick={()=> setModalMode('CREATE')}>Add Exercise</button>
 
                 <button
                     onClick={completeWorkout}
                     disabled={isCompleteDisabled}
+                    data-cy={"complete-workout-btn"}
                     className={`
     w-full py-4 rounded-xl mt-4
     flex items-center justify-center gap-2 text-lg

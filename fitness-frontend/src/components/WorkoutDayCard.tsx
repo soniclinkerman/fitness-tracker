@@ -22,6 +22,7 @@ const WorkoutDayCard = ({ programId, day }: WorkoutDayCardProps) => {
         <Link
             to={`/programs/${programId}/days/${id}`}
             className="block bg-white rounded-2xl shadow-sm hover:shadow-md transition-all p-5"
+            data-cy="workout-day-card"
         >
             {/* Header */}
             <div className="flex justify-between items-center mb-2">

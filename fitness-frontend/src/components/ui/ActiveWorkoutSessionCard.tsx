@@ -23,6 +23,7 @@ export default function ActiveWorkoutSessionCard({
                 cursor-pointer
                 hover:bg-gray-50 transition
             "
+            data-cy="active-workout-session-card"
         >
             {/* Left content */}
             <div>
@@ -53,6 +54,7 @@ export default function ActiveWorkoutSessionCard({
         transition
     "
                 aria-label="Discard workout"
+                data-cy="discard-workout-btn"
             >
                 <TrashIcon className="w-6 h-6 stroke-[2]" />
             </button>

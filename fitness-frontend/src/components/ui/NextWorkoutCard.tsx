@@ -1,10 +1,12 @@
-export default function NextWorkoutCard({ day, onStart, active }) {
+export default function NextWorkoutCard({ day, onStart, active,dataCy }) {
     if (!day) return null;
 
     return (
         <div className="mt-6">
             {/* Card */}
-            <div className="
+            <div
+                data-cy={dataCy}
+                className="
                 bg-white
                 rounded-3xl
                 border border-teal-300
@@ -34,6 +36,7 @@ export default function NextWorkoutCard({ day, onStart, active }) {
                 {/* Start Button */}
                 <button
                     onClick={onStart}
+                    data-cy="start-workout-btn"
                     className="
                     w-full
                     bg-teal-600

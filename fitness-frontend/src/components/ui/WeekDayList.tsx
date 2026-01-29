@@ -15,6 +15,7 @@ export default function WeekDayList({ workoutDays: days, nextWorkoutDay, title, 
                             onClick={isInProgress ? onClick : null}
                             key={day.id}
                             disabled={isFuture}
+                            data-cy={`week-day-btn-${day.dayNumber}`}
                             className={`
                                 w-full flex items-center justify-between
                                 rounded-xl px-4 py-4 bg-white

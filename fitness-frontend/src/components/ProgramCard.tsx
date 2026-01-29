@@ -13,7 +13,7 @@ const ProgramCard = ({ program,onEdit,onDelete, onStart }: ProgramCardProps): JS
 
 
     return (
-        <div className="w-full bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+        <div className="w-full bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center gap-4" data-cy="program-card">
             {/* Icon placeholder */}
 
             <div className="p-3 bg-gray-50 rounded-xl text-gray-600 shrink-0">
@@ -23,7 +23,7 @@ const ProgramCard = ({ program,onEdit,onDelete, onStart }: ProgramCardProps): JS
 
             {/* Main Content */}
             <div className="flex-1">
-                <Link to={`/programs/${id}`}>
+                <Link to={`/programs/${id}`} data-cy="program-card-link">
                     <div>
                 <div className="flex justify-between items-center">
                     <h3 className="text-base font-semibold text-gray-900">{name}</h3>
@@ -41,15 +41,15 @@ const ProgramCard = ({ program,onEdit,onDelete, onStart }: ProgramCardProps): JS
                 {/* Placeholder for future Edit/Delete buttons */}
                 <div className="flex gap-2 mt-3">
                     <div>
-                        <button onClick={onStart} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-200">
+                        <button onClick={onStart} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-200" data-cy="program-start-btn">
                             Start Program
                         </button>
                     </div>
 
-                    <button onClick={onEdit} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-200">
+                    <button onClick={onEdit} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-200" data-cy="program-edit-btn">
                         Quick Edit
                     </button>
-                    <button onClick={onDelete} className="bg-red-100 text-red-600 px-3 py-1 rounded-md text-sm hover:bg-red-200">
+                    <button onClick={onDelete} className="bg-red-100 text-red-600 px-3 py-1 rounded-md text-sm hover:bg-red-200" data-cy="program-delete-btn">
                         Delete
                     </button>
                 </div>

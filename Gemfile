@@ -50,6 +50,7 @@ group :development, :test do
   gem 'graphiql-rails'
   gem "minitest"
   gem "minitest-rails"
+  gem 'factory_bot_rails'
 end
 
 gem "rspec-rails", "~> 8.0", groups: [:development, :test]

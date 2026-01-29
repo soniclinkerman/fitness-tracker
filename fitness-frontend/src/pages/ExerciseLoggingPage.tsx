@@ -353,6 +353,7 @@ export default function ExerciseLoggingPage() {
                 <button
                     className="bg-gray-100 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
                     onClick={revertChanges}
+                    data-cy="logging-revert-btn"
                 >
                     Revert Changes
                 </button>
@@ -363,6 +364,7 @@ export default function ExerciseLoggingPage() {
                     disabled={loading}
                     className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
                     onClick={lockInSetInfo}
+                    data-cy="logging-save-changes-btn"
                 >
                     Save Changes
                 </button>
@@ -383,6 +385,7 @@ export default function ExerciseLoggingPage() {
                 <button
                     className="bg-gray-100 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
                     onClick={()=> setIsModalOpen(false)}
+                    data-cy="logging-delete-cancel-btn"
                 >
                     Cancel
                 </button>
@@ -393,6 +396,7 @@ export default function ExerciseLoggingPage() {
                     disabled={loading}
                     className="text-white bg-red-500 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-danger-300 font-medium rounded-lg text-sm sm:w-auto w-full px-5 py-2.5 text-center"
                     onClick={()=> deleteSet(selectedSet)}
+                    data-cy="logging-delete-confirm-btn"
                 >
                    Delete
                 </button>
@@ -484,7 +488,7 @@ export default function ExerciseLoggingPage() {
             <BackButton handleButton={handleBack}/>
 
             {/* TITLE */}
-            <h1 className="text-2xl font-semibold mt-2">{exerciseName}</h1>
+            <h1 className="text-2xl font-semibold mt-2" data-cy="exercise-logging-title">{exerciseName}</h1>
 
             {hasUnsavedChanges && (
                 <span style={{ color: 'red', fontWeight: 'bold' }} className="text-sm">
@@ -580,6 +584,7 @@ export default function ExerciseLoggingPage() {
                             className="w-full border rounded-lg p-3 text-center"
                             type="number"
                             value={completedReps}
+                            data-cy="logging-reps-input"
                             onChange={
                             (e) => {
                                 const currentSet = currentWorkoutData[currentSetIndex]
@@ -610,6 +615,7 @@ export default function ExerciseLoggingPage() {
                             className="w-full border rounded-lg p-3 text-center"
                             type="number"
                             value={completedWeight}
+                            data-cy="logging-weight-input"
                             onChange={(e) => {
                                 const currentSet = currentWorkoutData[currentSetIndex]
                                 setCompletedWeight(Number(e.target.value))
@@ -638,6 +644,7 @@ export default function ExerciseLoggingPage() {
                         flex items-center justify-center gap-2
                         hover:bg-teal-700 transition
                     "
+                    data-cy="logging-next-set-btn"
                 >
                     <span>✓</span> {buttonLabel}
                 </button>
@@ -727,6 +734,7 @@ export default function ExerciseLoggingPage() {
       w-full py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-xl
       hover:bg-gray-50 transition
     "
+                        data-cy="logging-add-set-btn"
                     >
                         + Add Set
                     </button>
@@ -739,6 +747,7 @@ export default function ExerciseLoggingPage() {
       flex items-center justify-center gap-2 text-lg
       hover:bg-teal-700 transition shadow-sm
     "
+                        data-cy="logging-save-exercise-btn"
                     >
                         ✓ Save Exercise
                     </button>

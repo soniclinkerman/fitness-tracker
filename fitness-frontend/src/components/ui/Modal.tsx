@@ -18,6 +18,7 @@ const Modal = ({ onClose, title, children }: ModalProps) => {
                 <button
                     onClick={onClose}
                     className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
+                    data-cy="modal-close-btn"
                 >
                     ✕
                 </button>

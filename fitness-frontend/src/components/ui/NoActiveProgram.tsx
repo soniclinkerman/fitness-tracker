@@ -2,10 +2,12 @@ export default function NoActiveProgram({
                                             title,
                                             description,
                                             onClick,
+                                            dataCy,
                                             variant = "default",
                                         }) {
     return (
         <button
+            data-cy={dataCy}
             onClick={onClick}
             className={`
                 w-full text-left

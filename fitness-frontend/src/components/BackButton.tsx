@@ -11,6 +11,7 @@ const BackButton = ({directory=-1,handleButton}) => {
         <button
             onClick={handleButton ? handleButton : handleBack}
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
+            data-cy="back-btn"
         >
             <ArrowLeftIcon className="w-5 h-5" /> {/* Arrow Icon */}
             Back

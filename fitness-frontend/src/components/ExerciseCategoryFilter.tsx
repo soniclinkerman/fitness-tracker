@@ -14,7 +14,7 @@ const ExerciseCategoryFilter = ({
 
     return (
         <div className="flex flex-wrap gap-2 mb-6">
-            {/* “All” option */}
+            {/* "All" option */}
             <button
                 onClick={() => onSelect(null)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium border ${
@@ -22,6 +22,7 @@ const ExerciseCategoryFilter = ({
                         ? "bg-gray-800 text-white"
                         : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                 }`}
+                data-cy="category-filter-all-btn"
             >
                 All
             </button>
@@ -40,6 +41,7 @@ const ExerciseCategoryFilter = ({
                                 ? `${color.bg} ${color.text} border-transparent`
                                 : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
                         }`}
+                        data-cy={`category-filter-${cat.toLowerCase()}-btn`}
                     >
                         {cat}
                     </button>

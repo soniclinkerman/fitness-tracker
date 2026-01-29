@@ -12,4 +12,9 @@ Rails.application.routes.draw do
     mount GraphiQL::Rails::Engine, at: "/graphiql", graphql_path: "/graphql"
   end
 
+  if Rails.env.test? || Rails.env.development?
+    post "/test/reset", to: "test#reset"
+    post "/test/reset_workout_sessions", to: "test#reset_workout_sessions"
+  end
+
 end

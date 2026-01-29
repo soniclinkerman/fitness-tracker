@@ -103,6 +103,7 @@ const ExerciseList = () => {
             <button
                 onClick={() => openCreate()}
                 className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
+                data-cy="add-exercise-btn"
             >
                 + Add Exercise
             </button>
@@ -127,11 +128,11 @@ const ExerciseList = () => {
                         <div className="mb-5">
                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Exercise Name</label>
                             <input type="text"  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5"
-                                   placeholder="e.g., Incline Bench Press" required onChange={(e) => setName(e.target.value)}/>
+                                   placeholder="e.g., Incline Bench Press" required onChange={(e) => setName(e.target.value)} data-cy="exercise-name-input"/>
                         </div>
                         <div className="mb-5">
                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Description (Optional)</label>
-                            <textarea className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about form, texhnique, or variations...'} onChange={(e) => setDescription(e.target.value)}>
+                            <textarea className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about form, texhnique, or variations...'} onChange={(e) => setDescription(e.target.value)} data-cy="exercise-description-input">
 
                             </textarea>
                         </div>
@@ -142,7 +143,8 @@ const ExerciseList = () => {
                             <select id="categories"
                                     value={category}
                                     onChange={(e)=> setCategory(e.target.value as CATEGORY)}
-                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                    data-cy="exercise-category-select">
                                 {categoryOptions.map(category => <option key={category} value={category}>{category}</option>)}
                             </select>
                         </div>
@@ -187,6 +189,7 @@ const ExerciseList = () => {
                             className={"bg-gray-100 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"}
 
                             onClick={closeModal}
+                            data-cy="exercise-cancel-btn"
                         >Cancel</button>
                         <button
                             className={"text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"}
@@ -201,7 +204,9 @@ const ExerciseList = () => {
                                 console.error("Failed to delete:", err);
 
                             }
-                        }}>Save To Library
+                        }}
+                            data-cy="exercise-save-btn"
+                        >Save To Library
                         </button>
 
 
@@ -226,11 +231,11 @@ const ExerciseList = () => {
                         <div className="mb-5">
                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Exercise Name</label>
                             <input value={name} type="text"  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5"
-                                   placeholder="e.g., Incline Bench Press" required onChange={(e) => setName(e.target.value)}/>
+                                   placeholder="e.g., Incline Bench Press" required onChange={(e) => setName(e.target.value)} data-cy="exercise-update-name-input"/>
                         </div>
                         <div className="mb-5">
                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Description (Optional)</label>
-                            <textarea value={description}  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about form, texhnique, or variations...'} onChange={(e) => setDescription(e.target.value)}>
+                            <textarea value={description}  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about form, texhnique, or variations...'} onChange={(e) => setDescription(e.target.value)} data-cy="exercise-update-description-input">
 
                             </textarea>
                         </div>
@@ -241,7 +246,8 @@ const ExerciseList = () => {
                             <select id="categories"
                                     value={category}
                                     onChange={(e)=> setCategory(e.target.value as CATEGORY)}
-                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                    data-cy="exercise-category-select">
                                 {categoryOptions.map(category => <option key={category} value={category}>{category}</option>)}
                             </select>
                         </div>
@@ -301,6 +307,7 @@ const ExerciseList = () => {
                             className={"bg-gray-100 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"}
 
                             onClick={closeModal}
+                            data-cy="exercise-update-cancel-btn"
                         >Cancel</button>
                         <button
                             className={"text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"}
@@ -333,7 +340,9 @@ const ExerciseList = () => {
                                     console.error("Failed to delete:", err);
 
                                 }
-                            }}>Save Changes
+                            }}
+                            data-cy="exercise-update-save-btn"
+                        >Save Changes
                         </button>
 
 
@@ -363,9 +372,9 @@ const ExerciseList = () => {
                             console.error("Failed to delete:", err);
 
                         }
-                    }}>Delete
+                    }} data-cy="exercise-delete-confirm-btn">Delete
                     </button>
-                    <button onClick={closeModal}>Cancel</button>
+                    <button onClick={closeModal} data-cy="exercise-delete-cancel-btn">Cancel</button>
 
                 </Modal>
             )}

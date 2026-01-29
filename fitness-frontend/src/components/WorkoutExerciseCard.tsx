@@ -42,7 +42,7 @@ const WorkoutExerciseCard = ({ exerciseName, workoutSets,category,onEdit,onDelet
     }
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all p-5">
+        <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all p-5" data-cy="workout-exercise-card">
             {/* Header */}
             <div className="flex justify-between items-center mb-2">
                 <h3 className="text-base font-semibold text-gray-900">{exerciseName}</h3>
@@ -79,8 +79,8 @@ const WorkoutExerciseCard = ({ exerciseName, workoutSets,category,onEdit,onDelet
                 ))
             }
 
-            <button onClick={onEdit}>Edit</button>
-            <button onClick={onDelete}>Delete</button>
+            <button onClick={onEdit} data-cy="workout-exercise-edit-btn">Edit</button>
+            <button onClick={onDelete} data-cy="workout-exercise-delete-btn">Delete</button>
 
 
         </div>

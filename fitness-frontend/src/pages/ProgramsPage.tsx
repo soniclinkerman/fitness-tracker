@@ -107,6 +107,7 @@ const ProgramsPage = () => {
             <button
                 onClick={() => openCreate()}
                 className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700"
+                data-cy="new-program-btn"
             >
                 + New Program
             </button>
@@ -125,11 +126,11 @@ const ProgramsPage = () => {
                             <div className="mb-5">
                                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Program Name</label>
                                 <input type="text"  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5"
-                                       placeholder="e.g., My Workout Plan" required onChange={(e) => setName(e.target.value)}/>
+                                       placeholder="e.g., My Workout Plan" required onChange={(e) => setName(e.target.value)} data-cy="program-name-input"/>
                             </div>
                             <div className="mb-5">
                                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Description (Optional)</label>
-                                <textarea className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about what the focus of the program is on...'} onChange={(e) => setDescription(e.target.value)}>
+                                <textarea className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about what the focus of the program is on...'} onChange={(e) => setDescription(e.target.value)} data-cy="program-description-input">
 
                             </textarea>
                             </div>
@@ -137,13 +138,14 @@ const ProgramsPage = () => {
                             <div className="mb-5">
                                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Days In Program</label>
                                 <input type="number"  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5"
-                                       onChange={(e) => setDaysInProgram(Number(e.target.value))}/>
+                                       onChange={(e) => setDaysInProgram(Number(e.target.value))} data-cy="program-days-input"/>
                             </div>
 
                             <button
                                 className={"bg-gray-100 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"}
 
                                 onClick={closeModal}
+                                data-cy="program-cancel-btn"
                             >Cancel</button>
                             <button
                                 disabled={loading}
@@ -158,6 +160,7 @@ const ProgramsPage = () => {
 
                                     }
                                 }}
+                                data-cy="program-submit-btn"
                             >Continue
                             </button>
 
@@ -179,12 +182,12 @@ const ProgramsPage = () => {
                         <div className="mb-5">
                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Program Name</label>
                             <input value={name} type="text"  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5"
-                                   placeholder="e.g., My Workout Plan" required onChange={(e) => setName(e.target.value)}/>
+                                   placeholder="e.g., My Workout Plan" required onChange={(e) => setName(e.target.value)} data-cy="program-update-name-input"/>
 
                         </div>
                         <div className="mb-5">
                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Description (Optional)</label>
-                            <textarea value={description} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about what the focus of the program is on'} onChange={(e) => setDescription(e.target.value)}>
+                            <textarea value={description} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about what the focus of the program is on'} onChange={(e) => setDescription(e.target.value)} data-cy="program-update-description-input">
 
                             </textarea>
                         </div>
@@ -192,12 +195,14 @@ const ProgramsPage = () => {
                             className={"bg-gray-100 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"}
 
                             onClick={closeModal}
+                            data-cy="program-update-cancel-btn"
                         >Cancel</button>
                         <button
                             type={"button"}
                             disabled={loading}
                             className={"text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"}
                             onClick={()=> onEdit(selectedProgramId)}
+                            data-cy="program-update-save-btn"
                         >Save Changes
                         </button>
 
@@ -224,9 +229,9 @@ const ProgramsPage = () => {
                             } catch (err) {
                                 console.error("Failed to delete:", err);
                             }
-                        }}>Delete
+                        }} data-cy="program-delete-confirm-btn">Delete
                         </button>
-                        <button onClick={closeModal}>Cancel</button>
+                        <button onClick={closeModal} data-cy="program-delete-cancel-btn">Cancel</button>
 
                     </Modal>
                 )}

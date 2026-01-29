@@ -23,7 +23,8 @@ const ExerciseCard = ({ exercise, onClick, onEdit, onDelete }: ExerciseCardProps
     return (
         <div
             onClick={() => onClick?.(exercise)}
-            className="w-full bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center gap-4">
+            className="w-full bg-white p-4 rounded-2xl shadow-sm hover:shadow-md transition-all flex items-center gap-4"
+            data-cy="exercise-card">
             {/* Icon */}
             <div className="p-3 bg-gray-50 rounded-xl text-gray-600 shrink-0">
                 <DumbbellIcon className="w-5 h-5" /> {/* or any Heroicon placeholder */}
@@ -56,14 +57,16 @@ const ExerciseCard = ({ exercise, onClick, onEdit, onDelete }: ExerciseCardProps
                     {onEdit &&
                     <button
                         onClick={() => onEdit?.(exercise)}
-                        className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-200">
+                        className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-200"
+                        data-cy="exercise-edit-btn">
                         Edit
                     </button>
                     }
                     {onDelete &&
                     <button
                         onClick={() => onDelete?.(exercise)}
-                        className="bg-red-100 text-red-600 px-3 py-1 rounded-md text-sm hover:bg-red-200" >
+                        className="bg-red-100 text-red-600 px-3 py-1 rounded-md text-sm hover:bg-red-200"
+                        data-cy="exercise-delete-btn">
                         Delete
                     </button>
                     }
