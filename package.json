@@ -6,7 +6,8 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "cy:run:headed": "cypress run --headed",
-    "test:e2e": "cypress run"
+    "test:e2e": "cypress run",
+    "build": "vite build"
   },
   "devDependencies": {
     "cypress": "^13.0.0"
