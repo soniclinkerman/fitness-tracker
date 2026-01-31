@@ -7,9 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "serve dist -s -l $PORT"
   },
   "dependencies": {
+    "serve": "^14.2.4",
     "@apollo/client": "^4.0.7",
     "@heroicons/react": "^2.2.0",
     "graphql": "^16.11.0",
