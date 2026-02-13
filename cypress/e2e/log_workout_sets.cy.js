@@ -365,4 +365,86 @@ describe('Log Workout Sets Flow', () => {
       cy.contains('Curl').should('not.exist');
     });
   });
+
+  describe('Create New Exercise from Workout Session', () => {
+
+    it('can open the create exercise modal from add exercise dropdown', () => {
+      getToWorkoutSession();
+
+      // Click add exercise button to open modal
+      cy.get('[data-cy="add-exercise-btn"]').first().click();
+
+      // Modal should appear with search input
+      cy.get('[data-cy="search-exercise-input"]').should('be.visible');
+
+      // Focus on the search input to show dropdown
+      cy.get('[data-cy="search-exercise-input"]').focus();
+
+      // Click the create new exercise button
+      cy.get('[data-cy="create-new-exercise-btn"]').click();
+
+      // Create exercise modal should appear
+      cy.contains('Create Exercise').should('be.visible');
+      cy.contains('Exercise Name').should('be.visible');
+      cy.contains('Category').should('be.visible');
+    });
+
+    it('can create a new exercise and it appears in the dropdown', () => {
+      getToWorkoutSession();
+
+      // Click add exercise button to open modal
+      cy.get('[data-cy="add-exercise-btn"]').first().click();
+
+      // Focus on the search input to show dropdown
+      cy.get('[data-cy="search-exercise-input"]').focus();
+
+      // Click the create new exercise button
+      cy.get('[data-cy="create-new-exercise-btn"]').click();
+
+      // Fill out the create exercise form
+      const uniqueExerciseName = `Test Exercise ${Date.now()}`;
+      cy.get('input[placeholder="e.g., Incline Bench Press"]').type(uniqueExerciseName);
+      cy.get('textarea').type('Test description for this exercise');
+
+      // Select a category
+      cy.get('select').select('CHEST');
+
+      // Save the exercise
+      cy.contains('Save To Library').click();
+
+      // Wait for save to complete
+      cy.wait(500);
+
+      // Should go back to add exercise modal
+      cy.get('[data-cy="search-exercise-input"]').should('be.visible');
+
+      // Search for the newly created exercise
+      cy.get('[data-cy="search-exercise-input"]').clear().type(uniqueExerciseName);
+
+      // The new exercise should appear in the dropdown
+      cy.contains(uniqueExerciseName).should('be.visible');
+    });
+
+    it('can cancel creating a new exercise', () => {
+      getToWorkoutSession();
+
+      // Click add exercise button to open modal
+      cy.get('[data-cy="add-exercise-btn"]').first().click();
+
+      // Focus on the search input to show dropdown
+      cy.get('[data-cy="search-exercise-input"]').focus();
+
+      // Click the create new exercise button
+      cy.get('[data-cy="create-new-exercise-btn"]').click();
+
+      // Create exercise modal should appear
+      cy.contains('Create Exercise').should('be.visible');
+
+      // Click cancel
+      cy.contains('Cancel').click();
+
+      // Should go back to add exercise modal (CREATE mode)
+      cy.get('[data-cy="search-exercise-input"]').should('be.visible');
+    });
+  });
 });

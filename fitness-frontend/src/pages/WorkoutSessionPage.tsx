@@ -1,18 +1,18 @@
-import {useLazyQuery, useMutation, useQuery} from "@apollo/client/react";
+import {useMutation, useQuery} from "@apollo/client/react";
 import {GET_ACTIVE_WORKOUT_SESSION, GET_WORKOUT_SESSION} from "../graphql/queries/workoutSessionQueries.ts";
-import { useNavigate, useParams } from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import BackButton from "../components/BackButton.tsx";
 import {
     ADD_EXERCISE_TO_WORKOUT_SESSION,
-    COMPLETE_WORKOUT_SESSION, DELETE_EXERCISE_FROM_WORKOUT_SESSION
+    COMPLETE_WORKOUT_SESSION,
+    DELETE_EXERCISE_FROM_WORKOUT_SESSION
 } from "../graphql/mutations/workoutSessionMutations.ts";
-import {GET_PROGRAM} from "../graphql/queries/programQueries.ts";
 import {useEffect, useRef, useState} from "react";
-import {TrashIcon} from "@heroicons/react/24/outline";
-import {PlusIcon} from "@heroicons/react/16/solid";
 import {GET_EXERCISES} from "../graphql/queries/exerciseQueries.ts";
 import type {ModalMode} from "../types/ModalMode.ts";
 import Modal from "../components/ui/Modal.tsx";
+import {CATEGORY} from "../types/ExerciseCategoryEnum.ts";
+import {CREATE_EXERCISE} from "../graphql/mutations/exerciseMutations.ts";
 
 export default function WorkoutSessionPage() {
     const params = useParams();
@@ -45,6 +45,13 @@ export default function WorkoutSessionPage() {
 
     const handleFocus = () => {
         setDropDownOpen(true)
+    }
+
+    const onCreateExercise = () => {
+        setModalMode('CREATE')
+        setExerciseName('')
+        setDescription('')
+        setCategory(CATEGORY.UNCATEGORIZED)
     }
     const myRef = useRef<HTMLDivElement | null>(null)
     const handleSubmit = async (e) => {
@@ -97,6 +104,67 @@ export default function WorkoutSessionPage() {
     const isValidExercise =selectedExercise?.name === searchTerm &&isValidSetCount
 
 
+    const [exerciseName,setExerciseName] = useState('')
+    const [description,setDescription] = useState('')
+    const [category,setCategory] = useState(CATEGORY.UNCATEGORIZED)
+
+    const categoryOptions = Object.values(CATEGORY)
+    const [createExercise] = useMutation(CREATE_EXERCISE, {
+        onCompleted: () => {
+            onCreateExercise()
+
+        },
+        refetchQueries: [{ query:GET_EXERCISES}]
+    })
+
+    const createExerciseContent = (
+        <div>
+            {/*FORM*/}
+            <form className="max-w-sm mx-auto">
+                <div className="mb-5">
+                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Exercise Name</label>
+                    <input value={exerciseName} type="text"  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5"
+                           placeholder="e.g., Incline Bench Press" required onChange={(e) => setExerciseName(e.target.value)}/>
+                </div>
+                <div className="mb-5">
+                    <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-600">Description (Optional)</label>
+                    <textarea className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 focus:border-gray-500 block w-full p-2.5" placeholder={'Add notes about form, texhnique, or variations...'} onChange={(e) => setDescription(e.target.value)}>
+
+                            </textarea>
+                </div>
+
+                <div className="mb-5">
+                    <label
+                        className="block mb-2 text-sm font-medium text-gray-900 ">Category</label>
+                    <select id="categories"
+                            value={category}
+                            onChange={(e)=> setCategory(e.target.value as CATEGORY)}
+                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                        {categoryOptions.map(category => <option key={category} value={category}>{category}</option>)}
+                    </select>
+                </div>
+
+                <button
+                    className={"bg-gray-100 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"}
+                    onClick={()=> setModalMode('CREATE')}
+                >Cancel</button>
+                <button
+                    type={"button"}
+                    className={"text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"}
+                    onClick={async () => {
+                        try {
+                            const variables = { name: exerciseName, description, category }
+                            await createExercise({variables: variables});
+                        } catch (err) {
+                            console.error("Failed to delete:", err);
+
+                        }
+                    }}>Save To Library
+                </button>
+            </form>
+        </div>
+    )
+
     const createModalContent = (
         <form onSubmit={handleSubmit} className="space-y-4">
             {/* Dropdown */}
@@ -146,7 +214,11 @@ export default function WorkoutSessionPage() {
                             <div className="sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent border-t border-gray-200 shadow-inner">
                                 <button
                                     type="button"
-                                    onClick={() => setModalMode('CREATE_EXERCISE')}
+                                    onClick={() => {
+                                        setModalMode('CREATE_EXERCISE')
+                                        console.log(searchTerm)
+                                        setExerciseName(searchTerm)
+                                    }}
                                     className="w-full px-4 py-2 text-sm font-semibold text-teal-700 bg-white hover:bg-teal-50 transition-colors rounded-b-lg"
                                     data-cy="create-new-exercise-btn"
                                 >
@@ -420,6 +492,12 @@ export default function WorkoutSessionPage() {
                         {modalMode === 'CREATE' &&
                             <Modal key={modalMode} onClose={resetInput} title={'Add Exercise'}>
                                 {createModalContent}
+                            </Modal>
+                        }
+
+                        {modalMode === 'CREATE_EXERCISE' &&
+                            <Modal key={modalMode} onClose={resetInput} title={'Create Exercise'}>
+                                {createExerciseContent}
                             </Modal>
                         }
 
