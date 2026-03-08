@@ -155,7 +155,7 @@ export default function Dashboard({ activeProgram, totalWorkouts, workoutsThisWe
         <div className="p-6 max-w-4xl mx-auto">
 
             {/* Header */}
-            <h1 className="text-xl font-semibold" data-cy="dashboard-title">Welcome Back {user.user?.name.toUpperCase()}</h1>
+            <h1 className="text-xl font-semibold" data-cy="dashboard-title">Welcome Back {user && user.user?.name.toUpperCase()}</h1>
             <p className="text-gray-500 mb-6" data-cy="dashboard-description">Track your fitness journey</p>
 
             {/* Stats */}
