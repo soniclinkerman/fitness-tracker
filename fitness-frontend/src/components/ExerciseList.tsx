@@ -313,7 +313,6 @@ const ExerciseList = () => {
                             className={"text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"}
                             onClick={async () => {
                                 try {
-                                    console.log(category)
                                     const variables = showDefaults
                                         ? {
                                             id: id,
@@ -365,12 +364,10 @@ const ExerciseList = () => {
                     </h2>
                     <button onClick={async () => {
                         try {
-                            console.log("Deleted successfully");
                             closeModal();
                             await deleteExercise({variables: {id: selectedExercise?.id}});
                         } catch (err) {
-                            console.error("Failed to delete:", err);
-
+                            // Error handled silently
                         }
                     }} data-cy="exercise-delete-confirm-btn">Delete
                     </button>

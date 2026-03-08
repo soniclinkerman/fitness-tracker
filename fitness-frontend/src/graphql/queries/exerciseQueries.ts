@@ -10,6 +10,7 @@ query GET_EXERCISE($id: ID){
       defaultSets
       defaultRepsMin
       defaultRepsMax
+      userId
     }
   }
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_30_203159) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_06_024549) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -49,7 +49,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_30_203159) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "category"
+    t.bigint "user_id"
     t.index "lower((name)::text)", name: "index_exercises_on_lower_name", unique: true
+    t.index ["user_id"], name: "index_exercises_on_user_id"
+  end
+
+  create_table "jwt_denylists", force: :cascade do |t|
+    t.string "jti"
+    t.datetime "exp"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["jti"], name: "index_jwt_denylists_on_jti"
   end
 
   create_table "programs", force: :cascade do |t|
@@ -69,7 +79,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_30_203159) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "active_program_id"
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
     t.index ["active_program_id"], name: "index_users_on_active_program_id"
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
   create_table "workout_day_sessions", force: :cascade do |t|
@@ -160,6 +176,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_30_203159) do
   add_foreign_key "exercise_logs", "workout_exercises"
   add_foreign_key "exercise_progresses", "exercises"
   add_foreign_key "exercise_progresses", "users"
+  add_foreign_key "exercises", "users"
   add_foreign_key "programs", "users"
   add_foreign_key "workout_day_sessions", "workout_days"
   add_foreign_key "workout_day_sessions", "workout_sessions"

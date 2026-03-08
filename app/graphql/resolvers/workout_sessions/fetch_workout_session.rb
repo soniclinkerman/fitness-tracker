@@ -7,7 +7,7 @@ module Resolvers
 
       type Types::WorkoutSessionType, null: false
       def resolve(id:)
-        user_id = context[:current_user]
+        user_id = context[:current_user].id
         #Grab the user
         # Retrieve the workout_session based on the id
         # return all the exercises and set info

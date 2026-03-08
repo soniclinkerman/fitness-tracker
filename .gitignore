@@ -33,3 +33,42 @@
 
 # Ignore node modules
 /node_modules
+fitness-frontend/node_modules
+
+# Ignore bundled gems
+/vendor/bundle
+/gems
+/cache
+/extensions
+/specifications
+/plugins
+
+# Ignore generated binstubs (keep only the essential ones)
+/bin/bootsnap
+/bin/dotenv
+/bin/erb
+/bin/htmldiff
+/bin/irb
+/bin/ldiff
+/bin/nokogiri
+/bin/puma
+/bin/pumactl
+/bin/racc
+/bin/rackup
+/bin/rdbg
+/bin/rdoc
+/bin/ri
+/bin/rspec
+/bin/ruby-parse
+/bin/ruby-rewrite
+/bin/thor
+
+# Ignore IDE files
+.idea/
+
+# Ignore Cypress artifacts
+cypress/screenshots
+cypress/videos
+
+# Ignore Claude settings
+.claude/

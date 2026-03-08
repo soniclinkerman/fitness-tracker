@@ -11,5 +11,8 @@
   },
   "devDependencies": {
     "cypress": "^13.0.0"
+  },
+  "dependencies": {
+    "react-hot-toast": "^2.6.0"
   }
 }

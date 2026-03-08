@@ -30,9 +30,8 @@ const ProgramsPage = () => {
     })
 
     const [updateActiveProgram] = useMutation(UPDATE_ACTIVE_PROGRAM, {
-        onCompleted: (data) => {
+        onCompleted: () => {
             navigate("/")
-            console.log(data)
         }
     })
 
@@ -81,7 +80,6 @@ const ProgramsPage = () => {
 
     const onDelete = (id) => {
         setSelectedProgramId(id)
-        console.log(id)
         setModalMode('DELETE')
     }
     const onEdit = async (id) => {

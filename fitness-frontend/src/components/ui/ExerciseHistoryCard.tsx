@@ -11,15 +11,15 @@ interface ExerciseHistoryCardProps {
     }
 }
 
-const ExerciseHistoryCard = ({ exerciseHistory }) => {
-    const { sets, workoutSession } = exerciseHistory;
+const ExerciseHistoryCard = ({ data }) => {
+    const { sets } = data;
 
-    const date = new Date(workoutSession.updatedAt);
-    const dateCompleted = date.toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-    });
+    // const date = new Date(workoutSession.updatedAt);
+    // const dateCompleted = date.toLocaleDateString("en-US", {
+    //     month: "long",
+    //     day: "numeric",
+    //     year: "numeric",
+    // });
 
     const totalSets = sets.length;
     const avgReps =
@@ -34,17 +34,17 @@ const ExerciseHistoryCard = ({ exerciseHistory }) => {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 md:p-6 space-y-5">
 
             {/* Header */}
-            <div className="flex justify-between items-start">
-                <div>
-                    <p className="text-sm text-gray-500">{dateCompleted}</p>
-                </div>
+            {/*<div className="flex justify-between items-start">*/}
+            {/*    <div>*/}
+            {/*        <p className="text-sm text-gray-500">{dateCompleted}</p>*/}
+            {/*    </div>*/}
 
-                {workoutSession.rpe && (
-                    <span className="text-sm text-gray-500">
-                        RPE {workoutSession.rpe}/10
-                    </span>
-                )}
-            </div>
+            {/*    {workoutSession.rpe && (*/}
+            {/*        <span className="text-sm text-gray-500">*/}
+            {/*            RPE {workoutSession.rpe}/10*/}
+            {/*        </span>*/}
+            {/*    )}*/}
+            {/*</div>*/}
 
             {/* Set Breakdown */}
             <div className="space-y-3">

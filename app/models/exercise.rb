@@ -1,4 +1,5 @@
 class Exercise < ApplicationRecord
+  belongs_to :user, optional:true
   validates :name, presence: true, uniqueness: { case_sensitive: false }
   validates :default_sets, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :default_reps_min, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true

@@ -54,7 +54,7 @@ const ExerciseCard = ({ exercise, onClick, onEdit, onDelete }: ExerciseCardProps
 
                 {/* Buttons */}
                 <div className="flex gap-2 mt-3">
-                    {onEdit &&
+                    {(exercise.userId && onEdit) &&
                     <button
                         onClick={() => onEdit?.(exercise)}
                         className="bg-gray-100 text-gray-800 px-3 py-1 rounded-md text-sm hover:bg-gray-200"
@@ -62,7 +62,7 @@ const ExerciseCard = ({ exercise, onClick, onEdit, onDelete }: ExerciseCardProps
                         Edit
                     </button>
                     }
-                    {onDelete &&
+                    {(exercise.userId && onDelete) &&
                     <button
                         onClick={() => onDelete?.(exercise)}
                         className="bg-red-100 text-red-600 px-3 py-1 rounded-md text-sm hover:bg-red-200"

@@ -11,7 +11,6 @@
     "start": "serve dist -s -l $PORT"
   },
   "dependencies": {
-    "serve": "^14.2.4",
     "@apollo/client": "^4.0.7",
     "@heroicons/react": "^2.2.0",
     "graphql": "^16.11.0",
@@ -19,7 +18,8 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.5",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "serve": "^14.2.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

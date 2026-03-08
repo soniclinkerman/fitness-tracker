@@ -11,9 +11,21 @@ class GraphqlController < ApplicationController
     query = params[:query]
     operation_name = params[:operationName]
 
+    headers = request.headers["Authorization"]
+    if headers.present?
+      begin
+        token = headers.split(" ")[1]
+        decoded = JwtService.decode(token)
+        current_user = User.find_by(id: decoded[0]["user_id"])
+      rescue JWT::ExpiredSignature, JWT::DecodeError
+        current_user = nil
+      end
+    end
+
+
     context = {
       # Query context goes here, for example:
-      current_user: User.first,
+      current_user: current_user
     }
     result = FitnessTrackerSchema.execute(query, variables: variables, context: context, operation_name: operation_name)
     render json: result

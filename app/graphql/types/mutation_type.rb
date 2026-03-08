@@ -10,6 +10,8 @@ module Types
       "Hello World"
     end
 
+    field :sign_in, mutation: Mutations::Auth::SignIn
+    field :sign_up, mutation: Mutations::Auth::SignUp
     field :create_exercise, mutation: Mutations::Exercises::CreateExercise
     field :update_exercise, mutation: Mutations::Exercises::UpdateExercise
     field :delete_exercise, mutation: Mutations::Exercises::DeleteExercise

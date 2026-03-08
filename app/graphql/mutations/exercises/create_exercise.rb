@@ -11,7 +11,7 @@ module Mutations
       field :exercise, Types::ExerciseType, null: true
 
       def resolve(**args)
-        record = Exercise.create!(args)
+        record = Exercise.create!(**args, user_id: context[:current_user]&.id)
         { exercise: record }
       rescue ActiveRecord::RecordInvalid => e
         raise GraphQL::ExecutionError, e.record.errors.full_messages.join(", ")

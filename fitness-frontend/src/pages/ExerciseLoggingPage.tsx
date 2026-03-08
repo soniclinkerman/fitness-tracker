@@ -268,8 +268,7 @@ export default function ExerciseLoggingPage() {
         else{
             const variables = {id: id}
             try{
-                const response = await deleteWorkoutSetSession({ variables });
-                console.log("Set Deleted!", response);
+                await deleteWorkoutSetSession({ variables });
                 setSelectedSet(null)
                 const setData = JSON.parse(localStorage.getItem(key) || "{}");
                 delete setData[id];
@@ -277,7 +276,7 @@ export default function ExerciseLoggingPage() {
 
             }
             catch (error) {
-                console.error("Mutation error:", error);
+                // Error handled silently
             }
         }
 
@@ -297,14 +296,13 @@ export default function ExerciseLoggingPage() {
         });
         const variables = { sets: cleanedSet, workoutExerciseId: workoutExerciseId };
         try {
-            const response = await updateWorkoutSetSession({ variables });
-            console.log("Updated!", response);
+            await updateWorkoutSetSession({ variables });
             if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
                 localStorage.removeItem(`${sessionId}${workoutExerciseId}`)
             }
 
         } catch (error) {
-            console.error("Mutation error:", error);
+            // Error handled silently
         }
     };
 
@@ -455,7 +453,7 @@ export default function ExerciseLoggingPage() {
             return diffs;
         };
 
-        console.log(diffSets(sets, currentWorkoutData));
+        diffSets(sets, currentWorkoutData);
 
         const normalizeForSaveCheck = (sets) =>
             sets.map(set => ({
@@ -470,7 +468,6 @@ export default function ExerciseLoggingPage() {
                 normalizeForSaveCheck(sets),
                 normalizeForSaveCheck(currentWorkoutData)
             );
-         console.log("has Unsaved Changes: ", hasUnsavedChanges)
     }
 
     const handleBack = () => {
@@ -590,7 +587,6 @@ export default function ExerciseLoggingPage() {
                                 const currentSet = currentWorkoutData[currentSetIndex]
                                 setCompletedReps(Number(e.target.value))
                                 let setData = {}
-                                console.log(currentSet)
                                 if (localStorage.getItem(`${sessionId}${workoutExerciseId}`)) {
                                     setData = JSON.parse(localStorage.getItem(`${sessionId}${workoutExerciseId}`) as string)
                                 }
@@ -602,7 +598,6 @@ export default function ExerciseLoggingPage() {
                                     completedWeight,
                                 };
                                 localStorage.setItem(`${sessionId}${workoutExerciseId}`,JSON.stringify(setData))
-                                console.log(setData)
                             }
                         }
                         />

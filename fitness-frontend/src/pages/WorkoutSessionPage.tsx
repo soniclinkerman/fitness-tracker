@@ -1,5 +1,9 @@
 import {useMutation, useQuery} from "@apollo/client/react";
-import {GET_ACTIVE_WORKOUT_SESSION, GET_WORKOUT_SESSION} from "../graphql/queries/workoutSessionQueries.ts";
+import {
+    GET_ACTIVE_WORKOUT_SESSION,
+    GET_COMPLETED_WORKOUT_SESSIONS,
+    GET_WORKOUT_SESSION, WORKOUTS_THIS_WEEK
+} from "../graphql/queries/workoutSessionQueries.ts";
 import {useNavigate, useParams} from "react-router-dom";
 import BackButton from "../components/BackButton.tsx";
 import {
@@ -13,6 +17,7 @@ import type {ModalMode} from "../types/ModalMode.ts";
 import Modal from "../components/ui/Modal.tsx";
 import {CATEGORY} from "../types/ExerciseCategoryEnum.ts";
 import {CREATE_EXERCISE} from "../graphql/mutations/exerciseMutations.ts";
+import toast from "react-hot-toast";
 
 export default function WorkoutSessionPage() {
     const params = useParams();
@@ -156,6 +161,7 @@ export default function WorkoutSessionPage() {
                             const variables = { name: exerciseName, description, category }
                             await createExercise({variables: variables});
                         } catch (err) {
+                            toast.error("Something went wrong. Please try again later")
                             console.error("Failed to delete:", err);
 
                         }
@@ -216,7 +222,6 @@ export default function WorkoutSessionPage() {
                                     type="button"
                                     onClick={() => {
                                         setModalMode('CREATE_EXERCISE')
-                                        console.log(searchTerm)
                                         setExerciseName(searchTerm)
                                     }}
                                     className="w-full px-4 py-2 text-sm font-semibold text-teal-700 bg-white hover:bg-teal-50 transition-colors rounded-b-lg"
@@ -279,6 +284,7 @@ export default function WorkoutSessionPage() {
 
                     await deleteExerciseFromWorkoutSession({variables: {id: workoutExerciseId}});
                 } catch (err) {
+                    toast.error("Something went wrong. Please try again later")
                     console.error("Failed to delete:", err);
                 }
             }} data-cy="session-delete-exercise-confirm-btn">Delete
@@ -291,6 +297,7 @@ export default function WorkoutSessionPage() {
     const [addExerciseToWorkoutSession] = useMutation(ADD_EXERCISE_TO_WORKOUT_SESSION, {
         onCompleted: () => {
             resetInput()
+            toast.success("Exercises Added!")
         },
         refetchQueries: [
             {query: GET_WORKOUT_SESSION}
@@ -300,10 +307,13 @@ export default function WorkoutSessionPage() {
 
     const [completeWorkoutSession] = useMutation(COMPLETE_WORKOUT_SESSION, {
         onCompleted: () => {
+            toast.success("Workout Complete!")
             Promise.resolve().then(() => navigate("/"));
         },
         refetchQueries: [
             { query: GET_ACTIVE_WORKOUT_SESSION },
+            { query: GET_COMPLETED_WORKOUT_SESSIONS },
+            { query: WORKOUTS_THIS_WEEK },
         ] as Parameters<typeof useMutation>[1]["refetchQueries"],
 
     });
@@ -436,9 +446,8 @@ export default function WorkoutSessionPage() {
                                     <button
                                         type="button"
                                         onClick={(e) => {
-                                            console.log(exercise.workoutExerciseId)
                                             setWorkoutExerciseId(exercise.workoutExerciseId)
-                                            e.stopPropagation(); // 🔴 CRITICAL
+                                            e.stopPropagation();
                                             e.preventDefault();
                                             setModalMode('DELETE')
                                         }}

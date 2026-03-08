@@ -21,6 +21,7 @@ module Types
     # Add root-level fields here.
     # They will be entry points for queries on your schema.
 
+    field :user, resolver: Resolvers::Users::FetchUser, null:true, description: "Fetches the logged in user"
     field :exercises, resolver: Resolvers::Exercises::FetchExercises, null: true, description: "Fetches an exercise"
     field :workout_exercises, resolver: Resolvers::WorkoutExercises::FetchWorkoutExercises, null: true, description: "Fetches all workout exercises."
     field :programs, resolver: Resolvers::Programs::FetchPrograms, null: true, description: "Fetches a program."
@@ -30,6 +31,8 @@ module Types
     field :active_program, resolver: Resolvers::Programs::ActiveProgram, null:true, description: "Gets the current users active program"
     field :active_workout_session, resolver: Resolvers::WorkoutSessions::FetchActiveWorkoutSession, null: true,  description: "Gets the active workout session"
     field :exercise_history, resolver: Resolvers::ExerciseHistory::FetchExerciseHistory, null:true, description: "Fetches the history of a specific exercise"
+    field :completed_workout_sessions, resolver:Resolvers::WorkoutSessions::FetchCompletedWorkoutSessions, null:true, description: "Fetches all completed workout sessions"
+    field :workouts_this_week, resolver:Resolvers::WorkoutSessions::WorkoutsThisWeek, null:true, description: "Grabs a count of all workouts done this week"
     # TODO: remove me
     field :test_field, String, null: false,
       description: "An example field added by the generator"

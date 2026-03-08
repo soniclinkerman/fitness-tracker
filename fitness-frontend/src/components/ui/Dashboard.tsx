@@ -15,13 +15,16 @@ import {useEffect, useState} from "react";
 import ActiveWorkoutSessionCard from "./ActiveWorkoutSessionCard.tsx";
 import Modal from "./Modal.tsx";
 import {GET_ACTIVE_PROGRAM, GET_PROGRAM} from "../../graphql/queries/programQueries.ts";
+import {ME} from "../../graphql/queries/userQueries.ts";
 
 
-export default function Dashboard({ activeProgram, totalWorkouts, currentWeek }) {
+export default function Dashboard({ activeProgram, totalWorkouts, workoutsThisWeek }) {
     const [modalMode, setModalMode] = useState<'CREATE' | 'UPDATE' | 'DELETE' | null>(null);
     const navigate = useNavigate();
     const [workoutSession, setWorkoutSession] = useState();
     const { data, loading } = useQuery(GET_ACTIVE_WORKOUT_SESSION);
+
+    const {data: user, loading: userLoading} = useQuery(ME)
 
     useEffect(() => {
         if (data?.activeWorkoutSession) {
@@ -52,6 +55,7 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
         ] as Parameters<typeof useMutation>[1]["refetchQueries"],
     });
 
+
     const startWorkout = async () => {
         try {
             await startWorkoutSession();
@@ -69,7 +73,6 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
     };
 
     const resumeWorkout = () => {
-        console.log(workoutSession);
         const id = workoutSession.id;
         navigate(`/workout-sessions/${id}`);
     };
@@ -88,6 +91,7 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
     const sortedDays = activeProgram ? [...activeProgram.workoutDays].sort((a, b) => a.dayNumber - b.dayNumber) : null;
 
     if (loading) return <div>Loading...</div>;
+
 
     const activeProgramContent = (
         <>
@@ -127,14 +131,14 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
 
     const noActiveSessionOrProgramContent = (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
-            <NoActiveProgram
-                title="Choose a Program"
-                description="Browse programs and follow a structured plan"
-                onClick={() => navigate("/programs")}
-                dataCy="choose-program-card"
-            />
+            {/*<NoActiveProgram*/}
+            {/*    title="Choose a Program"*/}
+            {/*    description="Browse programs and follow a structured plan"*/}
+            {/*    onClick={() => navigate("/programs")}*/}
+            {/*    dataCy="choose-program-card"*/}
+            {/*/>*/}
 
-            <div className="text-center text-gray-500 font-semibold mx-2" data-cy="or-separator">OR</div>
+            {/*<div className="text-center text-gray-500 font-semibold mx-2" data-cy="or-separator">OR</div>*/}
 
             <NoActiveProgram
                 title="Start a Workout"
@@ -151,11 +155,11 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
         <div className="p-6 max-w-4xl mx-auto">
 
             {/* Header */}
-            <h1 className="text-xl font-semibold" data-cy="dashboard-title">Dashboard</h1>
+            <h1 className="text-xl font-semibold" data-cy="dashboard-title">Welcome Back {user.user?.name.toUpperCase()}</h1>
             <p className="text-gray-500 mb-6" data-cy="dashboard-description">Track your fitness journey</p>
 
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div className="grid grid-cols-2 gap-3 mb-8">
                 <StatsCard
                     icon="🏆"
                     value={totalWorkouts}
@@ -163,11 +167,12 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
                     dataCy="total-workouts-card"
                 />
                 <StatsCard
-                    icon="📅"
-                    value={currentWeek}
-                    label="Current Week"
-                    dataCy="current-week-card"
+                    icon="🔥"
+                    value={workoutsThisWeek}
+                    label="This Week"
+                    dataCy="workoutsThisWeek-card"
                 />
+
             </div>
 
             {/* Conditional */}
@@ -176,47 +181,47 @@ export default function Dashboard({ activeProgram, totalWorkouts, currentWeek })
             {(!activeProgram && !workoutSession) && noActiveSessionOrProgramContent}
 
             {/* Get Started */}
-            {(!activeProgram && !workoutSession) && (
-                <div className="mt-10 space-y-3" data-cy="get-started-section">
+            {/*{(!activeProgram && !workoutSession) && (*/}
+            {/*    <div className="mt-10 space-y-3" data-cy="get-started-section">*/}
 
-                    <div className="flex gap-3 items-center p-4 bg-white border border-gray-200 rounded-lg" data-cy="choose-program-step">
-                        <div className="w-7 h-7 rounded-full bg-green-50 flex items-center justify-center text-green-700 text-sm">
-                            1
-                        </div>
-                        <div>
-                            <p className="font-medium text-sm">Choose a Program</p>
-                            <p className="text-xs text-gray-500">
-                                Browse available programs and pick one that fits your goals
-                            </p>
-                        </div>
-                    </div>
+            {/*        <div className="flex gap-3 items-center p-4 bg-white border border-gray-200 rounded-lg" data-cy="choose-program-step">*/}
+            {/*            <div className="w-7 h-7 rounded-full bg-green-50 flex items-center justify-center text-green-700 text-sm">*/}
+            {/*                1*/}
+            {/*            </div>*/}
+            {/*            <div>*/}
+            {/*                <p className="font-medium text-sm">Choose a Program</p>*/}
+            {/*                <p className="text-xs text-gray-500">*/}
+            {/*                    Browse available programs and pick one that fits your goals*/}
+            {/*                </p>*/}
+            {/*            </div>*/}
+            {/*        </div>*/}
 
-                    <div className="flex gap-3 items-center p-4 bg-white border border-gray-200 rounded-lg" data-cy="follow-schedule-step">
-                        <div className="w-7 h-7 rounded-full bg-green-50 flex items-center justify-center text-green-700 text-sm">
-                            2
-                        </div>
-                        <div>
-                            <p className="font-medium text-sm">Follow the Schedule</p>
-                            <p className="text-xs text-gray-500">
-                                Complete workouts consistently to see progress
-                            </p>
-                        </div>
-                    </div>
+            {/*        <div className="flex gap-3 items-center p-4 bg-white border border-gray-200 rounded-lg" data-cy="follow-schedule-step">*/}
+            {/*            <div className="w-7 h-7 rounded-full bg-green-50 flex items-center justify-center text-green-700 text-sm">*/}
+            {/*                2*/}
+            {/*            </div>*/}
+            {/*            <div>*/}
+            {/*                <p className="font-medium text-sm">Follow the Schedule</p>*/}
+            {/*                <p className="text-xs text-gray-500">*/}
+            {/*                    Complete workouts consistently to see progress*/}
+            {/*                </p>*/}
+            {/*            </div>*/}
+            {/*        </div>*/}
 
-                    <div className="flex gap-3 items-center p-4 bg-white border border-gray-200 rounded-lg" data-cy="track-progress-step">
-                        <div className="w-7 h-7 rounded-full bg-green-50 flex items-center justify-center text-green-700 text-sm">
-                            3
-                        </div>
-                        <div>
-                            <p className="font-medium text-sm">Track Your Progress</p>
-                            <p className="text-xs text-gray-500">
-                                Monitor strength gains and celebrate achievements
-                            </p>
-                        </div>
-                    </div>
+            {/*        <div className="flex gap-3 items-center p-4 bg-white border border-gray-200 rounded-lg" data-cy="track-progress-step">*/}
+            {/*            <div className="w-7 h-7 rounded-full bg-green-50 flex items-center justify-center text-green-700 text-sm">*/}
+            {/*                3*/}
+            {/*            </div>*/}
+            {/*            <div>*/}
+            {/*                <p className="font-medium text-sm">Track Your Progress</p>*/}
+            {/*                <p className="text-xs text-gray-500">*/}
+            {/*                    Monitor strength gains and celebrate achievements*/}
+            {/*                </p>*/}
+            {/*            </div>*/}
+            {/*        </div>*/}
 
-                </div>
-            )}
+            {/*    </div>*/}
+            {/*)}*/}
 
             {modalMode === 'DELETE' &&
                 <Modal onClose={() => setModalMode(null)} title="Discard Workout Session">
