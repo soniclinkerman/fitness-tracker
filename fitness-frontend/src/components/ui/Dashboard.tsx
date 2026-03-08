@@ -130,7 +130,7 @@ export default function Dashboard({ activeProgram, totalWorkouts, workoutsThisWe
     );
 
     const noActiveSessionOrProgramContent = (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-3 items-center">
             {/*<NoActiveProgram*/}
             {/*    title="Choose a Program"*/}
             {/*    description="Browse programs and follow a structured plan"*/}
